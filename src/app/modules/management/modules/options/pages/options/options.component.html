@@ -1,0 +1,70 @@
+<div class="mb-4 flex justify-end">
+  <div class="inline-block space-x-4">
+    <button class="rounded-md bg-muted px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
+      aria-label="Import CSV">
+      Import CSV
+    </button>
+    <button (click)="addOption()"
+      class="rounded-md bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground" aria-label="Add Option">
+      Add Option
+    </button>
+  </div>
+</div>
+
+<div class="flex min-w-full flex-col rounded-xl border border-muted/20 bg-background p-2">
+  <app-table-action [title]="'Options'" [totalItem]="totalItem" (sortDataEvent)="sortOptionsPage($event)"
+    (searchDataEvent)="searchOptionsPage($event)"></app-table-action>
+  <div class="overflow-x-auto">
+    <table class="w-full table-auto border-collapse text-left align-middle leading-5 text-muted-foreground">
+      <thead class="border border-muted/20 text-xs text-muted-foreground">
+        <tr>
+          <th class="w-[50px]">
+            <input (change)="toggleOptions($event)" [(ngModel)]="selectAll" class="checkbox checkbox-sm" type="checkbox"
+              aria-label="Select all options" />
+          </th>
+          <th class="min-w-[200px]">Name</th>
+          <th class="min-w-[300px]">Description</th>
+          <th class="min-w-[100px] text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (option of searchOptions.options; track option.id) {
+        <tr class="hover:bg-card/50">
+          <td class="text-center">
+            <input [(ngModel)]="option.selected" (change)="checkSelectAll()" class="checkbox checkbox-sm"
+              type="checkbox" [attr.aria-label]="'Select ' + option.name" />
+          </td>
+          <td>{{ option.name }}</td>
+          <td>{{ option.description }}</td>
+          <td class="text-center">
+            <button (click)="editOption(option)"
+              class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
+              aria-label="Edit option">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                <path
+                  d="m2.695 14.762-1.262 3.155a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.886L17.5 5.501a2.121 2.121 0 0 0-3-3L3.58 13.419a4 4 0 0 0-.885 1.343Z" />
+              </svg>
+            </button>
+            <button (click)="deleteOption(option.id)"
+              class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
+              aria-label="Delete option">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                <path fill-rule="evenodd"
+                  d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z"
+                  clip-rule="evenodd" />
+              </svg>
+            </button>
+          </td>
+        </tr>
+        } @empty {
+        <tr>
+          <td class="py-4 text-center text-sm" colspan="4">No options found</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <app-table-footer [pageIdx]="pageIdx" [pageSize]="pageSize" [totalItem]="totalItem"
+    [isLoadingOptions]="isLoadingOptions" [totalPage]="totalPage" (reloadDataAndPageEvent)="reloadOptionsPage($event)">
+  </app-table-footer>
+</div>
