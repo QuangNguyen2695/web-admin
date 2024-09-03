@@ -226,7 +226,7 @@ export class ProductDetailComponent implements OnInit {
     this.productForm = this.fb.group({
       productName: ['', [Validators.required, Validators.minLength(25)]],
       productMainImage: ['', Validators.required],
-      productOption: ['', Validators.required],
+      productCate: ['', Validators.required],
     });
   }
 
@@ -296,16 +296,13 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
 
-    this.optionsProductForm.push(new OptionsProductForm({
-      key: 'option 1',
-      label: '',
-      required: true,
-      variants: [
-        { key: 'image', value: '', required: true },
-        { key: 'name', value: '', required: true },
-      ],
+    this.productForm.addControl("options1", this.fb.group({
+      optionName: '',
+      variants: this.fb.array([])
     }))
 
-    this.utilsService.createComponent(AddVaritantProductFormComponent, this.optionsFrom, { optionsProductForm: this.optionsProductForm });
+    console.log("🚀 ~ ProductDetailComponent ~ addVariant ~  this.productForm:", this.productForm)
+
+    this.utilsService.createComponent(AddVaritantProductFormComponent, this.optionsFrom, { optionsProductForm: this.optionsProductForm, formOptionsGroup: this.productForm.controls["options1"] });
   }
 }

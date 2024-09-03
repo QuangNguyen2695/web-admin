@@ -174,13 +174,13 @@
 
         <div class="mb-4">
             <label class="block text-sm">Hạng mục <span class="text-red-500">*</span></label>
-            <nz-select nzShowSearch class="mt-1 block w-full border border-border rounded-md p-2 text-sm" formControlName="productOption" nzPlaceHolder="Vui lòng chọn 1 hạng mục">
+            <nz-select nzShowSearch class="mt-1 block w-full border border-border rounded-md p-2 text-sm" formControlName="productCate" nzPlaceHolder="Vui lòng chọn 1 hạng mục">
                 @for (cat of listOfCategory; track cat.value) {
                   <nz-option [nzLabel]="cat.name" [nzValue]="cat.value"></nz-option>
                 }
               </nz-select>
             <p class="mt-1 text-xs text-red-500"
-              *ngIf="productForm.controls['productOption'].errors?.['required'] && productForm.controls['productOption'].touched">
+              *ngIf="productForm.controls['productCate'].errors?.['required'] && productForm.controls['productCate'].touched">
               Vui lòng điền vào trường này</p>
         </div>
     </div>
@@ -212,8 +212,8 @@
                 như
                 kích cỡ hoặc màu sắc.</p>
         </div>
+
         <ng-template #optionsFrom>
-         
         </ng-template>
 
         <div class="mb-4 w-max">
