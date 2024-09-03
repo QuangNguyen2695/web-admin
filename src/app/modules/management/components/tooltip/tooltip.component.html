@@ -1,0 +1,13 @@
+<div class="relative inline-block" (mouseenter)="show()" (mouseleave)="hide()">
+  <span [ngClass]="{'cursor-pointer' : !disable}">
+    <ng-content></ng-content>
+  </span>
+  <div class=" animate-fade-in-up absolute z-10 h-32 w-full" *ngIf="isVisible && !disable" [style.top]="position.top"
+    [style.left]="position.left">
+    <div class="tooltip-content h-max w-96 rounded-lg bg-white shadow-2xl">
+      <div class="p-4">
+        <ng-content select="[tooltipContent]"></ng-content>
+      </div>
+    </div>
+  </div>
+</div>

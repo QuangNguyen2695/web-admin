@@ -18,7 +18,7 @@ if (ENV.production) {
 }
 
 bootstrapApplication(AppComponent, {
-  providers: [importProvidersFrom(BrowserModule, AppModule), provideAnimations(), provideAnimationsAsync()],
+  providers: [importProvidersFrom(BrowserModule, AppModule), provideAnimations(), provideAnimationsAsync(), provideAnimationsAsync()],
 }).catch((err) => console.error(err));
 
 function selfXSSWarning() {

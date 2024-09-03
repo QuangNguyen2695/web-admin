@@ -1,8 +1,5 @@
 import { Component, inject, model, OnInit } from '@angular/core';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Options, Options2Create } from 'src/app/modules/management/model/options.model';
 
 export interface DialogData {
@@ -20,15 +17,11 @@ export class CreateEditOptionDialogComponent implements OnInit {
   data = inject<DialogData>(MAT_DIALOG_DATA);
   option: Options = this.data.option ?? new Options2Create();
 
-  constructor() {
-  }
+  constructor() {}
 
-  ngOnInit(): void {
+  ngOnInit(): void {}
 
-  }
-
-  onButtonClick() {
-  }
+  onButtonClick() {}
 
   closeDialog(): void {
     this.dialogRef.close();

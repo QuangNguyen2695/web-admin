@@ -5,11 +5,9 @@ import { ENV } from '@app/env';
 export type HttpObserve = 'body' | 'event' | 'response';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-
 export class ApiGateawayService extends HttpClient {
-
   protected api = ENV.apiUrl;
 
   constructor(handler: HttpHandler) {
@@ -21,28 +19,35 @@ export class ApiGateawayService extends HttpClient {
     let headers = new HttpHeaders();
     headers = headers.set('Access-Control-Allow-Origin', '*');
     headers = headers.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS,DELETE,PUT');
-    headers = headers.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization");
-    return super.get(url, { headers: headers })
+    headers = headers.set(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization',
+    );
+    return super.get(url, { headers: headers });
   }
-
 
   Cpost(url: string, body: any) {
     url = this.api + url;
     let headers = new HttpHeaders();
     headers = headers.set('Access-Control-Allow-Origin', '*');
     headers = headers.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS,DELETE,PUT');
-    headers = headers.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization");
-    return super.post(url, body, { headers: headers })
+    headers = headers.set(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization',
+    );
+    return super.post(url, body, { headers: headers });
   }
-
 
   Cput(url: string, body: any) {
     url = this.api + url;
     let headers = new HttpHeaders();
     headers = headers.set('Access-Control-Allow-Origin', '*');
     headers = headers.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS,DELETE,PUT');
-    headers = headers.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization");
-    return super.put(url, body, { headers: headers })
+    headers = headers.set(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization',
+    );
+    return super.put(url, body, { headers: headers });
   }
 
   Cdelete(url: string) {
@@ -50,10 +55,12 @@ export class ApiGateawayService extends HttpClient {
     let headers = new HttpHeaders();
     headers = headers.set('Access-Control-Allow-Origin', '*');
     headers = headers.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS,DELETE,PUT');
-    headers = headers.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization");
-    return super.delete(url, { headers: headers })
+    headers = headers.set(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization',
+    );
+    return super.delete(url, { headers: headers });
   }
-
 
   // request(method: string, url: string, options: {
   //   body?: any;

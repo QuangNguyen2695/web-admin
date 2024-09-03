@@ -1,0 +1,14 @@
+:host {
+  display: flex;
+  width: max-content;
+  height: max-content;
+}
+.tooltip-content::after {
+  content: '';
+  position: absolute;
+  left: 15%;
+  margin-left: -5px;
+  border-width: 8px;
+  border-style: solid;
+  border-color: white transparent transparent transparent;
+}

@@ -26,7 +26,7 @@ export class TableFooterComponent implements OnChanges {
     { id: 2, value: 20 },
     { id: 3, value: 30 },
     { id: 4, value: 50 },
-    { id: 5, value: 60, disabled: true }
+    { id: 5, value: 60, disabled: true },
   ];
 
   startItems = 0;

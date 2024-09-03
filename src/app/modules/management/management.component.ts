@@ -8,4 +8,4 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './management.component.html',
   styleUrl: './management.component.scss',
 })
-export class ManagementComponent { }
+export class ManagementComponent {}

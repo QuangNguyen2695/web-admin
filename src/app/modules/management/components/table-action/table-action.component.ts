@@ -7,20 +7,15 @@ import { debounce, debounceTime, delay, interval, map, of, Subscription, switchM
   styleUrl: './table-action.component.scss',
 })
 export class TableActionComponent {
-  @Input() title: string = "";
+  @Input() title: string = '';
   @Input() totalItem: number = 0;
 
+  @Output() searchDataEvent = new EventEmitter<any>();
+  @Output() sortDataEvent = new EventEmitter<any>();
 
-  @Output() searchDataEvent = new EventEmitter<any>()
-  @Output() sortDataEvent = new EventEmitter<any>()
+  ngOnInit() {}
 
-
-  ngOnInit() {
-
-  }
-
-  constructor() {
-  }
+  constructor() {}
 
   onEnter($event: any) {
     const keyword = $event.target.value;
@@ -42,5 +37,4 @@ export class TableActionComponent {
   //     console.log("🚀 ~ TableActionComponent ~ ).subscribe ~ data:", data)
   //   });
   // }
-
 }

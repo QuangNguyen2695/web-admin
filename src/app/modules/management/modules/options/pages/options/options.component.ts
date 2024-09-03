@@ -18,15 +18,12 @@ export class OptionsComponent implements OnInit {
   pageSize: number = 5;
   totalPage: number = 0;
   totalItem: number = 0;
-  keyword: string = "";
-  sortBy: string = "";
+  keyword: string = '';
+  sortBy: string = '';
 
   isLoadingOptions: boolean = false;
 
-  constructor(
-    private optionsService: OptionsService,
-    private dialog: MatDialog
-  ) { }
+  constructor(private optionsService: OptionsService, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.loadData();
@@ -46,7 +43,7 @@ export class OptionsComponent implements OnInit {
       error: (error) => {
         this.handleRequestError(error);
         this.isLoadingOptions = false;
-      }
+      },
     });
   }
 
@@ -54,32 +51,33 @@ export class OptionsComponent implements OnInit {
     const checked = (event.target as HTMLInputElement).checked;
     this.searchOptions.options = this.searchOptions.options.map((option: Options) => ({
       ...option,
-      selected: checked
+      selected: checked,
     }));
   }
 
   checkSelectAll(): void {
-    this.selectAll = !this.searchOptions.options.some(option => !option.selected);
+    this.selectAll = !this.searchOptions.options.some((option) => !option.selected);
   }
 
   deleteOption(id: string): void {
     const dialogRef = this.dialog.open(MaterialDialogComponent, {
       data: {
         title: 'Delete Option',
-        content: 'Are you sure you want to delete this option? All of your data will be permanently removed. This action cannot be undone.'
+        content:
+          'Are you sure you want to delete this option? All of your data will be permanently removed. This action cannot be undone.',
       },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.optionsService.deleteOption(id).subscribe({
           next: (res: any) => {
             if (res) {
-              this.searchOptions.options = this.searchOptions.options.filter(option => option.id !== id);
+              this.searchOptions.options = this.searchOptions.options.filter((option) => option.id !== id);
               toast.success('Option deleted successfully');
             }
           },
-          error: (error) => this.handleRequestError(error)
+          error: (error) => this.handleRequestError(error),
         });
       }
     });
@@ -89,22 +87,22 @@ export class OptionsComponent implements OnInit {
     const dialogRef = this.dialog.open(CreateEditOptionDialogComponent, {
       data: {
         title: 'Edit Option',
-        option: { ...option }
+        option: { ...option },
       },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.optionsService.updateOption(result).subscribe({
           next: (res: Options) => {
             if (res) {
               this.searchOptions.options = this.searchOptions.options.map((opt: Options) =>
-                opt.id === res.id ? { ...opt, ...res } : opt
+                opt.id === res.id ? { ...opt, ...res } : opt,
               );
               toast.success('Option updated successfully');
             }
           },
-          error: (error) => this.handleRequestError(error)
+          error: (error) => this.handleRequestError(error),
         });
       }
     });
@@ -117,7 +115,7 @@ export class OptionsComponent implements OnInit {
       },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.optionsService.createOption(result).subscribe({
           next: (res: Options) => {
@@ -126,7 +124,7 @@ export class OptionsComponent implements OnInit {
               toast.success('Option added successfully');
             }
           },
-          error: (error) => this.handleRequestError(error)
+          error: (error) => this.handleRequestError(error),
         });
       }
     });
@@ -156,7 +154,7 @@ export class OptionsComponent implements OnInit {
       description: error.message || 'Please try again later',
       action: {
         label: 'Dismiss',
-        onClick: () => { },
+        onClick: () => {},
       },
       actionButtonStyle: 'background-color:#DC2626; color:white;',
     });

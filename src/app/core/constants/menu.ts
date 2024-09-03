@@ -39,11 +39,15 @@ export class Menu {
         {
           icon: 'assets/icons/heroicons/outline/cube.svg',
           label: 'Options',
-          route: '/management',
           children: [
             { label: 'Options', route: '/management/options' },
-            { label: 'Options Value', route: '/management/options-value' }
+            { label: 'Options Value', route: '/management/options-value' },
           ],
+        },
+        {
+          icon: 'assets/icons/heroicons/outline/BuildingStorefront.svg',
+          label: 'Products',
+          route: '/management/products',
         },
       ],
     },

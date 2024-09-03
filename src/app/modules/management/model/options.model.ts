@@ -5,7 +5,6 @@ export class SearchOptions {
   totalPage: number = 0;
 }
 
-
 export class Options {
   id: string = '';
   name: string = '';
@@ -13,9 +12,7 @@ export class Options {
   selected: boolean = false;
 }
 
-
 export class Options2Create {
   name: string = '';
   description: string = '';
 }
-

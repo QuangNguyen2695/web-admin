@@ -42,6 +42,7 @@
     "@angular/platform-browser": "^18.1.0",
     "@angular/platform-browser-dynamic": "^18.1.0",
     "@angular/router": "^18.1.0",
+    "@kolkov/angular-editor": "^3.0.0-beta.0",
     "@popperjs/core": "^2.11.8",
     "@tailwindcss/aspect-ratio": "^0.4.0",
     "@tailwindcss/forms": "^0.5.2",
@@ -50,10 +51,12 @@
     "angular-svg-icon": "^13.0.0",
     "apexcharts": "^3.52.0",
     "ng-apexcharts": "^1.11.0",
+    "ng-zorro-antd": "^18.1.1",
     "ngx-sonner": "^2.0.1",
     "rxjs": "~7.4.0",
     "tslib": "^2.3.0",
-    "zone.js": "~0.14.2"
+    "zone.js": "~0.14.2",
+    "zustand": "^4.5.5"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^18.1.0",

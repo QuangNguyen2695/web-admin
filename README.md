@@ -93,3 +93,14 @@ Check out our awesome sponsors!
 
 The Tailwind name and logos are trademarks of Tailwind Labs Inc.
 The Angular name and logos are trademarks of Google.
+
+### config for angular editor add this on angular json
+"assets": [
+    "src/favicon.ico",
+    "src/assets",
+    {
+    "glob": "**/*",
+    "input": "./node_modules/@kolkov/angular-editor/assets/",
+    "output": "./assets/fonts/"
+    }
+],

@@ -1,0 +1,5 @@
+<div class="example-container" cdkDropList (cdkDropListDropped)="drop($event)">
+  <div class="example-box" *ngFor="let image of images; let i = index" cdkDrag>
+    <img [src]="image" [alt]="'Image ' + (i + 1)">
+  </div>
+</div>

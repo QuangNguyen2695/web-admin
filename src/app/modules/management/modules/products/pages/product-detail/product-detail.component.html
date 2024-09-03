@@ -1,0 +1,306 @@
+<form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="">
+
+    <div class="flex min-w-full flex-col rounded-xl border border-muted/20 bg-background px-5 py-3 mb-5">
+        <h2 class="text-lg font-semibold mb-4">Thông tin cơ bản</h2>
+        <div class="mb-4">
+            <label class="block text-sm">Hình ảnh sản phẩm <span class="text-red-500">*</span></label>
+            <p class="text-xs text-muted-foreground">Bạn nên thêm ít nhất 5 hình ảnh để
+                hình ảnh đầy đủ cho sản phẩm của
+                bạn.</p>
+            <div class="md:flex sm:flex-wrap xs">
+                <div class="w-max h-max pt-5 md:pr-5">
+                    <label class="block text-sm">Hình ảnh chính sản phẩm <span class="text-red-500">*</span></label>
+                    @if(!productMainImage.value){
+                    <app-tooltip class="pt-2">
+                        <div class="box-file-main select-none rounded border border-dashed border-gray-500 relative"
+                            [ngClass]="{'bg-gray-100': productMainImage.disable,
+                                 'border-red-500' : productForm.controls['productMainImage'].errors?.['required'] && productForm.controls['productMainImage'].touched
+                                 }">
+                            <div class="flex items-center flex-wrap content-center
+                                 left-0 m-auto w-full h-full block mx-auto-8 px-4">
+                                <div class="flex flex-wrap justify-center text-center w-full pb-5">
+                                    <svg-icon src="{{productMainImage.icon}}" [svgClass]="'h-8 w-8'"> </svg-icon>
+                                    <p class="text-sm pt-1 w-full">
+                                        {{productMainImage.disable ? productMainImage.name : 'Tải ảnh lên'}}
+                                    </p>
+                                </div>
+                                @for (attr of productMainImage.attrs; track $index) {
+                                <p class="text-xs pt-1 text-gray-500">
+                                    &#x2022; {{attr}}
+                                </p>
+                                }
+                            </div>
+                        </div>
+                        <div tooltipContent class="grid grap-2 grid-cols-2 cursor-pointer">
+                            <div class="px-2 h-12  relative flex items-center flex-wrap justify-center cursor-pointer">
+                                <input type="file" class=" block opacity-0 w-full h-full z-50 cursor-pointer"
+                                    formControlName="productMainImage" (change)="onMainImageFileChange($event)" />
+                                <div class="flex items-center flex-wrap justify-center content-center absolute top-0 right-0 
+                                                left-0 m-auto w-full h-full cursor-pointer">
+                                    <svg viewBox="0 0 20 20" fill="currentColor" class="size-6 inline">
+                                        <path
+                                            d="M9.25 13.25a.75.75 0 0 0 1.5 0V4.636l2.955 3.129a.75.75 0 0 0 1.09-1.03l-4.25-4.5a.75.75 0 0 0-1.09 0l-4.25 4.5a.75.75 0 1 0 1.09 1.03L9.25 4.636v8.614Z" />
+                                        <path
+                                            d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+                                    </svg>
+                                    <p class="text-xs pt-1 w-full text-center">
+                                        Tập tin cục bộ
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="px-2 h-12 flex items-center flex-wrap justify-center cursor-pointer">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                    class="size-6 inline">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                </svg>
+                                <p class="text-xs pt-1 w-full text-center">
+                                    Trung tâm phương tiện
+                                </p>
+                            </div>
+                        </div>
+                    </app-tooltip>
+                    }@else {
+                    <div class="box-file-main select-none rounded border border-gray-300 relative">
+                        <div class="cursor-pointer w-full h-full">
+                            <img class="w-full h-full object-contain " [src]="productMainImage.value" />
+                            <div
+                                class="absolute flex action-preview-img opacity-0  justify-center items-center w-full h-full top-0 right-0 ">
+                                <button (click)="removeMainImageFileImage()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-4 text-white">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                    </svg>
+                                </button>
+
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    <p class="mt-1 text-xs text-red-500"
+                        *ngIf="productForm.controls['productMainImage'].errors?.['required'] && productForm.controls['productMainImage'].touched">
+                        Vui lòng upload ảnh cho trường này</p>
+                </div>
+                <div class="w-max h-max pt-5">
+                    <label class="block text-sm">Hình ảnh phụ sản phẩm</label>
+                    <div cdkDropList cdkDropListOrientation="mixed" class="grid grid-rows-2 grid-cols-4 gap-2 w-max pt-2"
+                        (cdkDropListDropped)="drop($event)">
+                        @for(productGalleryImage of productGalleryImages; track productGalleryImage.name){
+                        @if(!productGalleryImage.value){
+                        <app-tooltip [disable]="productGalleryImage.disable">
+                            <div class="w-32 h-32 select-none rounded border-dashed border border-gray-500 relative"
+                                [ngClass]="{'bg-gray-100': productGalleryImage.disable,}">
+                                <div class="flex items-
+                                        center flex-wrap content-center
+                                            left-0 m-auto w-full h-full block mx-auto-8 px-4">
+                                    <div class="flex flex-wrap justify-center text-center w-full pb-5">
+                                        <img class="w-6/12"
+                                            [src]="productGalleryImage.disable ? 
+                                                    productGalleryImage.icon : 'assets/icons/heroicons/outline/media-image.svg'"
+                                            placeholder="front" />
+                                        <p class="text-sm pt-1 w-full">
+                                            {{productGalleryImage.disable ? productGalleryImage.name : 'Tải ảnh lên'}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div tooltipContent class="grid grap-2 grid-cols-2 cursor-pointer">
+                                <div
+                                    class="px-2 h-12  relative flex items-center flex-wrap justify-center cursor-pointer">
+                                    <input type="file" multiple
+                                        class=" block opacity-0 w-full h-full z-50 cursor-pointer"
+                                        (change)="onFileChange($event, $index)" />
+                                    <div class="flex items-center flex-wrap justify-center content-center absolute top-0 right-0 
+                                                        left-0 m-auto w-full h-full cursor-pointer">
+                                        <svg viewBox="0 0 20 20" fill="currentColor" class="size-6 inline">
+                                            <path
+                                                d="M9.25 13.25a.75.75 0 0 0 1.5 0V4.636l2.955 3.129a.75.75 0 0 0 1.09-1.03l-4.25-4.5a.75.75 0 0 0-1.09 0l-4.25 4.5a.75.75 0 1 0 1.09 1.03L9.25 4.636v8.614Z" />
+                                            <path
+                                                d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+                                        </svg>
+                                        <p class="text-xs pt-1 w-full text-center">
+                                            Tập tin cục bộ
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="px-2 h-12 flex items-center flex-wrap justify-center cursor-pointer">
+                                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                        class="size-6 inline">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                    </svg>
+                                    <p class="text-xs pt-1 w-full text-center">
+                                        Trung tâm phương tiện
+                                    </p>
+                                </div>
+                            </div>
+                        </app-tooltip>
+                        }
+                        @else {
+                        <div class="cdkDrag-productGalleryImage w-32 h-32 select-none rounded border border-gray-200 relative hinh-{{$index}}" cdkDrag>
+                            <div class="cursor-pointer w-full h-full">
+                                <img class="w-full h-full object-contain " [src]="productGalleryImage.value">
+                                <div
+                                    class="absolute flex action-preview-img opacity-0 justify-center items-center w-full h-full top-0 right-0">
+                                    <button (click)="removeFileImage($index)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-4 text-white">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
+                                    </button>
+
+                                </div>
+                            </div>
+                        </div>
+                        }
+                        }
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <div class="flex min-w-full flex-col rounded-xl border border-muted/20 bg-background px-5 py-3 mb-5">
+        <div class="mb-4">
+            <label class="block text-sm">Tên sản phẩm <span class="text-red-500">*</span></label>
+            <input type="text" class="mt-1 block w-full border border-border rounded-md p-2 text-sm" formControlName="productName"
+                placeholder="[Thương hiệu] + [Nội dung] + [Phụ kiện áp dụng] + [Loại sản phẩm] + [Chức năng / Tính năng chính]" />
+            <p class="mt-1 text-xs text-red-500"
+                *ngIf="productForm.controls['productName'].errors?.['required'] && productForm.controls['productName'].touched">
+                Vui lòng điền vào trường này</p>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-sm">Hạng mục <span class="text-red-500">*</span></label>
+            <nz-select nzShowSearch class="mt-1 block w-full border border-border rounded-md p-2 text-sm" formControlName="productOption" nzPlaceHolder="Vui lòng chọn 1 hạng mục">
+                @for (cat of listOfCategory; track cat.value) {
+                  <nz-option [nzLabel]="cat.name" [nzValue]="cat.value"></nz-option>
+                }
+              </nz-select>
+            <p class="mt-1 text-xs text-red-500"
+              *ngIf="productForm.controls['productOption'].errors?.['required'] && productForm.controls['productOption'].touched">
+              Vui lòng điền vào trường này</p>
+        </div>
+    </div>
+    <div class="flex min-w-full flex-col rounded-xl border border-muted/20 bg-background px-5 py-3 mb-5">
+        <h2 class="text-lg font-semibold mb-4">Chi tiết Sản phẩm</h2>
+        <div class="mb-4">
+            <label class="block text-sm">Mô tả sản phẩm<span
+                    class="text-red-500">*</span></label>
+            <p class="text-xs text-muted-foreground py-2">Nên viết mô tả dài ít nhất 500 ký tự và thêm hình ảnh để giúp
+                khách
+                hàng đưa ra quyết định mua hàng.</p>
+            <angular-editor [config]="this.config"></angular-editor>
+        </div>
+    </div>
+
+    <div class="flex min-w-full flex-col rounded-xl border border-muted/20 bg-background px-5 py-3 mb-5">
+        <h2 class="text-lg font-semibold mb-4">Thông tin Bán hàng</h2>
+        <div class="mb-4">
+            <label class="inline-flex items-center mb-2 cursor-pointer">
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-300 pr-5">Kích hoạt biến thể</span>
+                <nz-switch class="flex" [(ngModel)]="isOptions" [ngModelOptions]="{standalone: true}" (ngModelChange)="addVariant()"
+                    [nzCheckedChildren]="checkedTemplate"
+                    [nzUnCheckedChildren]="unCheckedTemplate"
+                ></nz-switch>
+                <ng-template #checkedTemplate><span nz-icon nzType="check"></span></ng-template>
+                <ng-template #unCheckedTemplate><span nz-icon nzType="close"></span></ng-template>
+            </label>
+            <p class="text-xs text-muted-foreground  py-2">Bạn có thể thêm biến thể nếu sản phẩm này có nhiều lựa chọn
+                như
+                kích cỡ hoặc màu sắc.</p>
+        </div>
+        <ng-template #optionsFrom>
+         
+        </ng-template>
+
+        <div class="mb-4 w-max">
+            <button class="flex items-center justify-center text-green-700 rounded-md text-sm"
+                aria-label="Delete option">
+                <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                    <path
+                        d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+                </svg>
+
+                Thêm biến thể
+            </button>
+        </div>
+
+        <div class="mb-4">
+            <label class="inline-flex items-center mb-2 cursor-pointer">
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-300">Danh sách Biến thể</span>
+            </label>
+            <table class="min-w-full mt-4 border border-border">
+                <thead>
+                    <tr class="bg-gray-100 text-left">
+                        <th class="p-2 border-b border-border text-sm font-normal">Màu sắc</th>
+                        <th class="p-2 border-b border-border text-sm font-normal">Giá bán lẻ <span
+                                class="text-red-500">*</span>
+                        </th>
+                        <th class="p-2 border-b border-border text-sm font-normal">Số lượng <span
+                                class="text-red-500">*</span></th>
+                        <th class="p-2 border-b border-border text-sm font-normal">SKU Người bán <span
+                                class="text-muted"></span>
+                        </th>
+                        <th class="p-2 border-b border-border text-sm font-normal"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="p-2 border-b border-border">
+                            <label>Đen</label>
+                        </td>
+                        <td class="p-2 border-b border-border">
+                            <input type="text" placeholder="Giá bán" class="border border-border rounded p-1 w-full" />
+                        </td>
+                        <td class="p-2 border-b border-border">
+                            <input type="number" placeholder="Số lượng"
+                                class="border border-border rounded p-1 w-full" />
+                        </td>
+                        <td class="p-2 border-b border-border">
+                            <input type="text" placeholder="SKU" class="border border-border rounded p-1 w-full" />
+                        </td>
+                        <td class="p-2 border-b border-border">
+                            <button
+                                class="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
+                                aria-label="Delete option">
+                                <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                                    <path fill-rule="evenodd"
+                                        d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- <div class="grid grid-rows-3 grid-cols-4 gap-1 w-max pt-5">
+
+        <app-tooltip class="row-span-2 col-span-2">
+            <div class="box-file-main">
+                <div class="cursor-pointer w-full h-full border border-gray-300">
+                    <img class="w-full h-full object-contain " src="./assets/images/background-perspective.png">
+                </div>
+            </div>
+        </app-tooltip>
+
+        <app-tooltip class="row-span-2 col-span-2">
+            <div class="w-32 h-32">
+                <div class="cursor-pointer w-full h-full border border-gray-300">
+                    <img class="w-full h-full object-contain " src="./assets/images/variant.png">
+                </div>
+            </div>
+        </app-tooltip>
+    </div> -->
+    <!-- <cdk-drag-drop-mixed></cdk-drag-drop-mixed> -->
+
+    <button type="submit"
+        class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed">
+        Apply
+    </button>
+</form>
