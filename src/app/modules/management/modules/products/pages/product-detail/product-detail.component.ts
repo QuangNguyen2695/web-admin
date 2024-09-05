@@ -290,19 +290,19 @@ export class ProductDetailComponent implements OnInit {
     moveItemInArray(this.productGalleryImages, event.previousIndex, event.currentIndex);
   }
 
-  addVariant() {
-    console.log(this.isOptions);
-    if (!this.isOptions) {
-      return;
-    }
+  // addOptions() {
+  //   console.log(this.isOptions);
+  //   if (!this.isOptions) {
+  //     return;
+  //   }
 
-    this.productForm.addControl("options1", this.fb.group({
-      optionName: '',
-      variants: this.fb.array([])
-    }))
+  //   this.productForm.addControl("options1", this.fb.group({
+  //     optionName: '',
+  //     variants: this.fb.array([])
+  //   }))
 
-    console.log("🚀 ~ ProductDetailComponent ~ addVariant ~  this.productForm:", this.productForm)
+  //   console.log("🚀 ~ ProductDetailComponent ~ addVariant ~  this.productForm:", this.productForm)
 
-    this.utilsService.createComponent(AddVaritantProductFormComponent, this.optionsFrom, { optionsProductForm: this.optionsProductForm, formOptionsGroup: this.productForm.controls["options1"] });
-  }
+  //   this.utilsService.createComponent(AddVaritantProductFormComponent, this.optionsFrom, { optionsProductForm: this.optionsProductForm, formOptionsGroup: this.productForm.controls["options1"] });
+  // }
 }

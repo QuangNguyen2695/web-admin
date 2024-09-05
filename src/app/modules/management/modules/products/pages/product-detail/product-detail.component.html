@@ -198,10 +198,13 @@
 
     <div class="flex min-w-full flex-col rounded-xl border border-muted/20 bg-background px-5 py-3 mb-5">
         <h2 class="text-lg font-semibold mb-4">Thông tin Bán hàng</h2>
+
+
+<!--         
         <div class="mb-4">
             <label class="inline-flex items-center mb-2 cursor-pointer">
                 <span class="text-sm font-medium text-gray-900 dark:text-gray-300 pr-5">Kích hoạt biến thể</span>
-                <nz-switch class="flex" [(ngModel)]="isOptions" [ngModelOptions]="{standalone: true}" (ngModelChange)="addVariant()"
+                <nz-switch class="flex" [(ngModel)]="isOptions" [ngModelOptions]="{standalone: true}" (ngModelChange)="addOptions()"
                     [nzCheckedChildren]="checkedTemplate"
                     [nzUnCheckedChildren]="unCheckedTemplate"
                 ></nz-switch>
@@ -211,10 +214,10 @@
             <p class="text-xs text-muted-foreground  py-2">Bạn có thể thêm biến thể nếu sản phẩm này có nhiều lựa chọn
                 như
                 kích cỡ hoặc màu sắc.</p>
-        </div>
-
+        </div> -->
+<!-- 
         <ng-template #optionsFrom>
-        </ng-template>
+        </ng-template> -->
 
         <div class="mb-4 w-max">
             <button class="flex items-center justify-center text-green-700 rounded-md text-sm"

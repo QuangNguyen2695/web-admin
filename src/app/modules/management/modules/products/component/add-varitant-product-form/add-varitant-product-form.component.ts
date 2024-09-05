@@ -65,5 +65,5 @@ export class AddVaritantProductFormComponent {
       ['name' + this.idxVariant]: new FormControl('', [Validators.required]),
     });
   }
-
+  
 }
