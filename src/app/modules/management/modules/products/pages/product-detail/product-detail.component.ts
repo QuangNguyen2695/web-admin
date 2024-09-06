@@ -1,5 +1,5 @@
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { Component, OnInit, QueryList, ViewChild, ViewChildren, ViewContainerRef } from '@angular/core';
+import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren, ViewContainerRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { asapScheduler } from 'rxjs';
@@ -13,7 +13,7 @@ import { AddVaritantProductFormComponent } from '../../component/add-varitant-pr
   styleUrls: ['./product-detail.component.scss'],
 })
 export class ProductDetailComponent implements OnInit {
-  @ViewChild('optionsFrom', { read: ViewContainerRef }) optionsFrom: ViewContainerRef | any;
+  @ViewChildren('optionsComponent') optionsComponent: QueryList<ElementRef> | any;
 
   productForm: FormGroup;
 
@@ -49,28 +49,23 @@ export class ProductDetailComponent implements OnInit {
 
   listOfCategory = [
     {
-      name: "Hàng dệt & Đồ nội thất mềm - Chăn ga gối đệm - Chăn",
-      value: "Hàng dệt & Đồ nội thất mềm - Chăn ga gối đệm - Chăn"
+      name: 'Hàng dệt & Đồ nội thất mềm - Chăn ga gối đệm - Chăn',
+      value: 'Hàng dệt & Đồ nội thất mềm - Chăn ga gối đệm - Chăn',
     },
     {
-      name: "Hạng mục khác...",
-      value: "Hạng mục khác..."
-    }
+      name: 'Hạng mục khác...',
+      value: 'Hạng mục khác...',
+    },
   ];
 
   isOptions = false;
 
+  idxOption = 0;
 
   optionsProductForm: OptionsProductForm<string>[] = [];
 
-
-  constructor(
-    private fb: FormBuilder,
-    private utilsService: UtilsService
-  ) {
+  constructor(private fb: FormBuilder, public utilsService: UtilsService) {
     this.productForm = new FormGroup({});
-    console.log("🚀 ~ ProductDetailComponent ~ this.optionsFrom:", this.optionsFrom)
-
   }
 
   ngOnInit() {
@@ -78,26 +73,26 @@ export class ProductDetailComponent implements OnInit {
     this.productImageBuilder();
   }
 
+  ngAfterViewInit(): void {}
+
   onSubmit() {
     if (!this.productForm.valid) {
       this.markFormGroupTouched(this.productForm);
-      return
+      return;
     }
 
     let galleryImage: any = [];
 
-
     this.productGalleryImages.forEach((item: any) => {
-      if (item.value)
-        galleryImage.push(item.value);
+      if (item.value) galleryImage.push(item.value);
     });
 
     const productUpsert = {
       name: this.productForm.get('productName')?.value,
       mainImage: this.productMainImage,
-      galleryImage: galleryImage
-    }
-    console.log("🚀 ~ ProductDetailComponent ~ onSubmit ~ productUpsert:", productUpsert)
+      galleryImage: galleryImage,
+    };
+    console.log('🚀 ~ ProductDetailComponent ~ onSubmit ~ productUpsert:', productUpsert);
   }
 
   onFileChange(event: any, currentImageIndex: number) {
@@ -112,18 +107,15 @@ export class ProductDetailComponent implements OnInit {
       currentImageIndex++;
     }
     // Update form control
-    this.productForm.patchValue({ productImage: "Have image" });
-    console.log("🚀 ~ ProductDetailComponent ~ readAndSetImage ~ this.productForm:", this.productForm)
+    this.productForm.patchValue({ productImage: 'Have image' });
   }
 
-  onMainImageFileChange(event: any,) {
+  onMainImageFileChange(event: any) {
     const files: FileList = event.target.files;
-    if (!files || files.length === 0)
-      return;
+    if (!files || files.length === 0) return;
 
     const file = files[0];
-    if (!file || !this.isValidImageFile(file))
-      return;
+    if (!file || !this.isValidImageFile(file)) return;
 
     const reader = new FileReader();
     reader.onload = (event: any) => {
@@ -168,8 +160,11 @@ export class ProductDetailComponent implements OnInit {
 
     // Update the disabled state of all images
     this.updateImageStates();
-    this.productForm.patchValue({ productImage: "" });
-    console.log("🚀 ~ ProductDetailComponent ~ removeFileImage ~ this.productGalleryImages:", this.productGalleryImages)
+    this.productForm.patchValue({ productImage: '' });
+    console.log(
+      '🚀 ~ ProductDetailComponent ~ removeFileImage ~ this.productGalleryImages:',
+      this.productGalleryImages,
+    );
   }
 
   removeMainImageFileImage(): void {
@@ -182,7 +177,7 @@ export class ProductDetailComponent implements OnInit {
       nextImage.disable = true;
     }
 
-    this.productForm.patchValue({ productMainImage: "" });
+    this.productForm.patchValue({ productMainImage: '' });
   }
 
   private clearImage(index: number): void {
@@ -232,77 +227,101 @@ export class ProductDetailComponent implements OnInit {
 
   productImageBuilder() {
     this.productMainImage = {
-      name: "Tải lên ảnh chỉnh",
-      attrs: ["Kích thước: 300x300 px", "Kích thước tập tin tối đa: 5MB", "Format: JPG, JPEG, PNG"
-      ],
-      formControlName: "mainImage",
+      name: 'Tải lên ảnh chỉnh',
+      attrs: ['Kích thước: 300x300 px', 'Kích thước tập tin tối đa: 5MB', 'Format: JPG, JPEG, PNG'],
+      formControlName: 'mainImage',
       value: null,
-      icon: "assets/icons/heroicons/outline/media-image.svg",
+      icon: 'assets/icons/heroicons/outline/media-image.svg',
       disable: false,
-    }
+    };
 
-    this.productGalleryImages = [{
-      name: "Chính Diện",
-      value: null,
-      icon: "./assets/images/front.png",
-      disable: true,
-    }, {
-      name: "Cạnh Bên",
-      value: null,
-      icon: "./assets/images/side.png",
-      disable: true,
-    }, {
-      name: "Góc Độ Khác",
-      value: null,
-      icon: "./assets/images/another-angle.png",
-      disable: true,
-    }, {
-      name: "Đang sử dụng",
-      value: null,
-      icon: "./assets/images/using.png",
-      disable: true,
-    }, {
-      name: "Biến Thể",
-      value: null,
-      icon: "./assets/images/variant.png",
-      disable: true,
-    }, {
-      name: "Cảnh nền",
-      value: null,
-      icon: "./assets/images/background-perspective.png",
-      disable: true,
-    }, {
-      name: "Chụp cận",
-      value: null,
-      icon: "./assets/images/close-up-photo.png",
-      disable: true,
-    }
-      , {
-      name: "Kích Thước",
-      value: null,
-      icon: "./assets/images/size-box.png",
-      disable: true,
-    }]
-    console.log("🚀 ~ ProductDetailComponent ~ productImageBuilder ~ productGalleryImages:", this.productGalleryImages)
+    this.productGalleryImages = [
+      {
+        name: 'Chính Diện',
+        value: null,
+        icon: './assets/images/front.png',
+        disable: true,
+      },
+      {
+        name: 'Cạnh Bên',
+        value: null,
+        icon: './assets/images/side.png',
+        disable: true,
+      },
+      {
+        name: 'Góc Độ Khác',
+        value: null,
+        icon: './assets/images/another-angle.png',
+        disable: true,
+      },
+      {
+        name: 'Đang sử dụng',
+        value: null,
+        icon: './assets/images/using.png',
+        disable: true,
+      },
+      {
+        name: 'Biến Thể',
+        value: null,
+        icon: './assets/images/variant.png',
+        disable: true,
+      },
+      {
+        name: 'Cảnh nền',
+        value: null,
+        icon: './assets/images/background-perspective.png',
+        disable: true,
+      },
+      {
+        name: 'Chụp cận',
+        value: null,
+        icon: './assets/images/close-up-photo.png',
+        disable: true,
+      },
+      {
+        name: 'Kích Thước',
+        value: null,
+        icon: './assets/images/size-box.png',
+        disable: true,
+      },
+    ];
+    console.log('🚀 ~ ProductDetailComponent ~ productImageBuilder ~ productGalleryImages:', this.productGalleryImages);
   }
 
   drop(event: CdkDragDrop<object[]>) {
     moveItemInArray(this.productGalleryImages, event.previousIndex, event.currentIndex);
   }
 
-  // addOptions() {
-  //   console.log(this.isOptions);
-  //   if (!this.isOptions) {
-  //     return;
-  //   }
+  turnOnOffOptions() {
+    if (!this.isOptions) {
+      this.utilsService.clearComponent();
+      for (let i = 0; i <= this.idxOption; i++) {
+        this.productForm.removeControl('option' + i);
+      }
+      this.idxOption = 0;
+      return;
+    }
 
-  //   this.productForm.addControl("options1", this.fb.group({
-  //     optionName: '',
-  //     variants: this.fb.array([])
-  //   }))
+    this.addOption();
+  }
 
-  //   console.log("🚀 ~ ProductDetailComponent ~ addVariant ~  this.productForm:", this.productForm)
-
-  //   this.utilsService.createComponent(AddVaritantProductFormComponent, this.optionsFrom, { optionsProductForm: this.optionsProductForm, formOptionsGroup: this.productForm.controls["options1"] });
-  // }
+  addOption() {
+    this.productForm.addControl(
+      'option' + this.idxOption,
+      this.fb.group({
+        optionName: ['', Validators.required],
+        variants: this.fb.array([]),
+      }),
+    );
+    console.log("🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm:", this.productForm)
+    this.idxOption += 1;
+    
+    // this.optionsComponent.map((vcr: any, index: number) => {
+    //   console.log('🚀 ~ ProductDetailComponent ~ addOption ~ vcr:', vcr.nativeElement);
+    //   this.utilsService.createComponent(AddVaritantProductFormComponent, vcr.nativeElement, {
+    //     formOptionsGroup: this.productForm.controls['option' + this.idxOption],
+    //   });
+    // });
+    // console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.optionsComponent:', this.optionsComponent);
+  }
 }

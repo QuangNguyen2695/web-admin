@@ -200,11 +200,10 @@
         <h2 class="text-lg font-semibold mb-4">Thông tin Bán hàng</h2>
 
 
-<!--         
         <div class="mb-4">
             <label class="inline-flex items-center mb-2 cursor-pointer">
                 <span class="text-sm font-medium text-gray-900 dark:text-gray-300 pr-5">Kích hoạt biến thể</span>
-                <nz-switch class="flex" [(ngModel)]="isOptions" [ngModelOptions]="{standalone: true}" (ngModelChange)="addOptions()"
+                <nz-switch class="flex" [(ngModel)]="isOptions" [ngModelOptions]="{standalone: true}" (ngModelChange)="turnOnOffOptions()"
                     [nzCheckedChildren]="checkedTemplate"
                     [nzUnCheckedChildren]="unCheckedTemplate"
                 ></nz-switch>
@@ -214,13 +213,14 @@
             <p class="text-xs text-muted-foreground  py-2">Bạn có thể thêm biến thể nếu sản phẩm này có nhiều lựa chọn
                 như
                 kích cỡ hoặc màu sắc.</p>
-        </div> -->
-<!-- 
-        <ng-template #optionsFrom>
-        </ng-template> -->
+        </div>
+
+        @for(i of utilsService.createRange(idxOption); track $index ){
+           <app-add-varitant-product-form [formOptionsGroup]="this.productForm.controls['option' + (this.idxOption - 1)]"></app-add-varitant-product-form>
+        }
 
         <div class="mb-4 w-max">
-            <button class="flex items-center justify-center text-green-700 rounded-md text-sm"
+            <button class="flex items-center justify-center text-green-700 rounded-md text-sm" (click)="addOption()"
                 aria-label="Delete option">
                 <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
                     <path

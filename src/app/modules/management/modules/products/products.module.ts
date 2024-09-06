@@ -6,23 +6,16 @@ import { ProductDetailComponent } from './pages/product-detail/product-detail.co
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { CdkDrag, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkDragDropMixedSortingExample } from '../../components/image-drag-drop/cdk-drag-drop-mixed-sorting-example';
-
+import { AddVaritantProductFormComponent } from './component/add-varitant-product-form/add-varitant-product-form.component';
 
 @NgModule({
   declarations: [
     ProductsComponent,
     ProductDetailComponent,
-    CdkDragDropMixedSortingExample
+    AddVaritantProductFormComponent,
+    CdkDragDropMixedSortingExample,
   ],
-  imports: [
-    CommonModule,
-    MangementModule,
-    AngularEditorModule,
-    DragDropModule,
-    CdkDropList, CdkDrag,
-  ],
-  schemas: [
-    CUSTOM_ELEMENTS_SCHEMA
-  ],
+  imports: [CommonModule, MangementModule, AngularEditorModule, DragDropModule, CdkDropList, CdkDrag],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ProductsModule { }
+export class ProductsModule {}

@@ -1,24 +1,27 @@
-import { ComponentFactoryResolver, Injectable, ViewContainerRef } from "@angular/core";
+import { ComponentFactoryResolver, ComponentRef, Injectable, ViewContainerRef } from '@angular/core';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root',
 })
 export class UtilsService {
-    constructor(private componentFactoryResolver: ComponentFactoryResolver) {
+  ref: ComponentRef<any> | undefined;
 
+  constructor(private componentFactoryResolver: ComponentFactoryResolver) {}
+
+  createComponent(component: any, emlement: any, params: any) {
+    const factory = this.componentFactoryResolver.resolveComponentFactory(component);
+    this.ref && this.ref.destroy();
+    this.ref = emlement.createComponent(factory, 0);
+    if (params && this.ref) {
+      this.ref.instance.params = params;
     }
+  }
 
-    createComponent(component: any, emlement: any, params: any) {
-        const factory = this.componentFactoryResolver.resolveComponentFactory(component);
-        emlement.clear();
-        let ref = emlement.createComponent(factory, 0);
-        if (params) {
-            ref.instance.params = params;
-        }
-    }
+  clearComponent() {
+    this.ref && this.ref.destroy();
+  }
 
-    clearComponent(emlement: any) {
-        emlement.clear();
-    }
-
+  createRange(number: any) {
+    return new Array(number).fill(0).map((n, index) => index + 1);
+  }
 }
