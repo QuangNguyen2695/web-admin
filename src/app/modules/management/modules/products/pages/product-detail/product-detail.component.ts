@@ -1,11 +1,11 @@
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren, ViewContainerRef } from '@angular/core';
+import { Component, ComponentFactoryResolver, ElementRef, OnInit, QueryList, ViewChild, ViewChildren, ViewContainerRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
-import { asapScheduler } from 'rxjs';
 import { UtilsService } from 'src/app/base/utils.sevice';
 import { OptionsProductForm } from 'src/app/modules/management/model/options-product-form';
 import { AddVaritantProductFormComponent } from '../../component/add-varitant-product-form/add-varitant-product-form.component';
+import { v4 as uuid } from 'uuid';
 
 @Component({
   selector: 'app-product-detail',
@@ -13,7 +13,10 @@ import { AddVaritantProductFormComponent } from '../../component/add-varitant-pr
   styleUrls: ['./product-detail.component.scss'],
 })
 export class ProductDetailComponent implements OnInit {
-  @ViewChildren('optionsComponent') optionsComponent: QueryList<ElementRef> | any;
+  @ViewChild('optionsContainer', { read: ViewContainerRef, static: true })
+  optionsContainer!: ViewContainerRef;
+
+  loadedOptions: any = {};
 
   productForm: FormGroup;
 
@@ -60,11 +63,13 @@ export class ProductDetailComponent implements OnInit {
 
   isOptions = false;
 
-  idxOption = 0;
-
   optionsProductForm: OptionsProductForm<string>[] = [];
 
-  constructor(private fb: FormBuilder, public utilsService: UtilsService) {
+  constructor(
+    private fb: FormBuilder,
+    public utilsService: UtilsService,
+    private componentFactoryResolver: ComponentFactoryResolver,
+  ) {
     this.productForm = new FormGroup({});
   }
 
@@ -73,7 +78,7 @@ export class ProductDetailComponent implements OnInit {
     this.productImageBuilder();
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void { }
 
   onSubmit() {
     if (!this.productForm.valid) {
@@ -294,34 +299,85 @@ export class ProductDetailComponent implements OnInit {
 
   turnOnOffOptions() {
     if (!this.isOptions) {
-      this.utilsService.clearComponent();
-      for (let i = 0; i <= this.idxOption; i++) {
-        this.productForm.removeControl('option' + i);
-      }
-      this.idxOption = 0;
+      this.turnOffOptions();
       return;
     }
-
     this.addOption();
   }
 
+  turnOffOptions() {
+    
+    for (let idx in this.loadedOptions) {
+      this.productForm.removeControl('option' + idx);
+      this.loadedOptions[idx].destroy();
+    }
+    this.loadedOptions = {};
+    this.isOptions = false;
+    return;
+  }
+
   addOption() {
+    let componentFactory = this.componentFactoryResolver.resolveComponentFactory(AddVaritantProductFormComponent,)
+    let componentRef = this.optionsContainer.createComponent(componentFactory)
+
+    let ref: any = componentRef.instance
+
+    const uId = uuid();
+
     this.productForm.addControl(
-      'option' + this.idxOption,
+      'option' + (uId),
       this.fb.group({
         optionName: ['', Validators.required],
         variants: this.fb.array([]),
       }),
     );
-    console.log("🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm:", this.productForm)
-    this.idxOption += 1;
-    
-    // this.optionsComponent.map((vcr: any, index: number) => {
-    //   console.log('🚀 ~ ProductDetailComponent ~ addOption ~ vcr:', vcr.nativeElement);
-    //   this.utilsService.createComponent(AddVaritantProductFormComponent, vcr.nativeElement, {
-    //     formOptionsGroup: this.productForm.controls['option' + this.idxOption],
-    //   });
-    // });
-    // console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.optionsComponent:', this.optionsComponent);
+
+    const formOptionsGroup = this.productForm.controls['option' + (uId)];
+
+    const countLoadedOptions = Object.getOwnPropertyNames(this.loadedOptions).length;
+
+    const isFixedForm = countLoadedOptions <= 0;
+    console.log("🚀 ~ ProductDetailComponent ~ addOption ~ this.loadedOptions:", this.loadedOptions)
+
+    ref.init(uId, formOptionsGroup, isFixedForm) // Will be used to know which index should be removed
+
+    this.loadedOptions[uId] = componentRef
+    console.log("🚀 ~ ProductDetailComponent ~ addOption ~ this.loadedOptions:", this.loadedOptions)
+
+    // Subscribing to the EventEmitter from the chip
+    ref.emitDeletion.subscribe((index: number) => {
+      this._removeOption(index)
+    })
   }
+
+  private _removeOption(index: number) {
+    this.loadedOptions[index].destroy();
+    console.log("🚀 ~ ProductDetailComponent ~ _removeOption ~ this.loadedOptions[index]:", this.loadedOptions[index]);
+    delete this.loadedOptions[index];
+    this.productForm.removeControl('option' + index);
+    if (this.loadedOptions.length <= 0) {
+      this.turnOffOptions();
+    }
+  }
+
+
+  // addOption() {
+  //   this.productForm.addControl(
+  //     'option' + this.idxOption,
+  //     this.fb.group({
+  //       optionName: ['', Validators.required],
+  //       variants: this.fb.array([]),
+  //     }),
+  //   );
+  //   console.log("🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm:", this.productForm)
+  //   this.idxOption += 1;
+
+  //   // this.optionsComponent.map((vcr: any, index: number) => {
+  //   //   console.log('🚀 ~ ProductDetailComponent ~ addOption ~ vcr:', vcr.nativeElement);
+  //   //   this.utilsService.createComponent(AddVaritantProductFormComponent, vcr.nativeElement, {
+  //   //     formOptionsGroup: this.productForm.controls['option' + this.idxOption],
+  //   //   });
+  //   // });
+  //   // console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.optionsComponent:', this.optionsComponent);
+  // }
 }

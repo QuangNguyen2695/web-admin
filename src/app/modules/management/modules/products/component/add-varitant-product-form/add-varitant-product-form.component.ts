@@ -1,9 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { OptionsProductForm } from 'src/app/modules/management/model/options-product-form';
-import { ProductService } from '../../../service/product.service';
-import { CommonModule } from '@angular/common';
-import { TooltipComponent } from 'src/app/modules/management/components/tooltip/tooltip.component';
 
 @Component({
   selector: 'app-add-varitant-product-form',
@@ -11,10 +7,12 @@ import { TooltipComponent } from 'src/app/modules/management/components/tooltip/
   styleUrl: './add-varitant-product-form.component.scss',
 })
 export class AddVaritantProductFormComponent {
-  @Input() formOptionsGroup: any;
+  formOptionsGroup: any;
   payLoad: any;
 
   variantsForm: FormGroup = new FormGroup({});
+  isImage: boolean = true;
+  isFixedForm: boolean = false;
 
   variants: any;
 
@@ -33,17 +31,22 @@ export class AddVaritantProductFormComponent {
 
   isSetupOptions: boolean = true;
 
-  constructor(private fb: FormBuilder) {}
+  _indexComponent: number | undefined;
+
+  @Output() emitDeletion = new EventEmitter<number>()
+
+  constructor(private fb: FormBuilder) { }
+
+  init(index: number, formOptionsGroup: any, isFixedForm: boolean) {
+    this._indexComponent = index;
+    this.formOptionsGroup = formOptionsGroup;
+    this.isFixedForm = isFixedForm;
+  }
 
   ngOnInit() {
     this.setVariantsForm();
-    console.log('🚀 ~ AddVaritantProductFormComponent ~ ngOnInit ~ this.formOptionsGroup:', this.formOptionsGroup);
-
-    if (this.formOptionsGroup) {
-      this.variants = this.formOptionsGroup.controls['variants'] as FormArray;
-      console.log('🚀 ~ AddVaritantProductFormComponent ~ ngOnInit ~ this.variants:', this.variants);
-      this.variants.push(this.variantsForm);
-    }
+    this.variants = this.formOptionsGroup.controls['variants'] as FormArray;
+    this.variants.push(this.variantsForm);
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {
@@ -57,8 +60,10 @@ export class AddVaritantProductFormComponent {
 
   onSubmit() {
     const variantFrom = <FormGroup>this.variants;
-    if (!variantFrom.valid) {
+    console.log("🚀 ~ AddVaritantProductFormComponent ~ onSubmit ~ variantFrom:", variantFrom)
+    if (!variantFrom.valid || !this.formOptionsGroup.valid) {
       this.markFormGroupTouched(variantFrom);
+      this.markFormGroupTouched(this.formOptionsGroup);
       return;
     }
     this.isSetupOptions = false;
@@ -77,6 +82,12 @@ export class AddVaritantProductFormComponent {
     return variantFromControl.value;
   }
 
+  setValueFormGroup(i: any, variant: FormGroup, controlName: string, value: any) {
+    const variantFromControl = variant.controls[controlName + i] as any;
+    if (!variantFromControl.value) return;
+    variantFromControl.value = value;
+  }
+
   addVariant() {
     const variantFrom = <FormGroup>this.variants;
     if (!variantFrom.valid) {
@@ -88,8 +99,14 @@ export class AddVaritantProductFormComponent {
   }
 
   setVariantsForm() {
+    if (this.isImage) {
+      this.variantsForm = this.fb.group({
+        ['image' + this.idxVariant]: new FormControl('', [Validators.required]),
+        ['name' + this.idxVariant]: new FormControl('', [Validators.required]),
+      });
+      return;
+    }
     this.variantsForm = this.fb.group({
-      ['image' + this.idxVariant]: new FormControl('', [Validators.required]),
       ['name' + this.idxVariant]: new FormControl('', [Validators.required]),
     });
   }
@@ -98,11 +115,15 @@ export class AddVaritantProductFormComponent {
     const files: FileList = event.target.files;
     if (!files || files.length === 0) return;
     const file = files[0];
-
     if (!file || !this.isValidImageFile(file)) return;
 
     this.readAndSetImage(file, variant, controlName);
   }
+
+  removeFileImage(idx: number, variant: FormGroup, controlName: string): void {
+    this.setValueFormGroup(idx, variant, controlName, '');
+  }
+
 
   private isValidImageFile(file: File): boolean {
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
@@ -113,15 +134,17 @@ export class AddVaritantProductFormComponent {
   private readAndSetImage(file: File, variant: FormGroup, controlName: string): void {
     const reader = new FileReader();
     reader.onload = (event: any) => {
-      // currentImage.value = event.target.result;
       const variantFromControl = variant.controls[controlName] as any;
       variantFromControl.value = event.target.result;
-      console.log('🚀 ~ AddVaritantProductFormComponent ~ readAndSetImage ~ variantFromControl:', variantFromControl);
     };
     reader.readAsDataURL(file);
   }
 
   openSetup() {
     this.isSetupOptions = true;
+  }
+
+  remove() {
+    this.emitDeletion.emit(this._indexComponent)
   }
 }
