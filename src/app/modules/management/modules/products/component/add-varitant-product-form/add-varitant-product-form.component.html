@@ -7,81 +7,91 @@
         <div class="mb-4">
           <div class="flex">
           <label class="mb-2 flex w-full text-sm">Tên biến thể <span class="text-red-500">*</span></label>
-          <label nz-checkbox class="flex w-full justify-end" [(ngModel)]="isImage" [ngModelOptions]="{standalone: true}">Thêm hình ảnh</label>
+          @if(isFixedForm){
+            <label nz-checkbox class="flex w-full justify-end" [(ngModel)]="isImage" [ngModelOptions]="{standalone: true}" (ngModelChange)="setIsImage()" >Thêm hình ảnh</label>
+          }
           </div>
-          <div class="block">
-            <nz-select 
-            class="mt-1 block w-full border border-border rounded-md p-2 text-sm" 
-            [ngClass]="{'border-red-500': formOptionsGroup.controls['optionName'].errors?.required  && formOptionsGroup.controls['optionName'].touched}"
-            nzShowSearch 
-            formControlName="optionName" nzPlaceHolder="Vui lòng chọn 1 Biến Thể"
-            >
-              @for (cat of listOfOptions; track cat.value) {
-                <nz-option [nzLabel]="cat.name" [nzValue]="cat.value"></nz-option>
-              }
-            </nz-select>
-            @if(formOptionsGroup.controls['optionName'].errors?.required  && formOptionsGroup.controls['optionName'].touched) {
-              <p
-                class="mt-1 text-xs text-red-500">
-                Vui lòng điền tên biến thể
-              </p>
-            }
-            <div class="flex items-center">
+          <div class="flex">
+            <div class="w-full">
+              <nz-select 
+              class="mt-1 block w-full border border-border rounded-md p-2 text-sm" 
+              [ngClass]="{'border-red-500': formOptionsGroup.controls['optionName'].errors?.required  && formOptionsGroup.controls['optionName'].touched}"
+              nzShowSearch 
+              formControlName="optionName" nzPlaceHolder="Vui lòng chọn 1 Biến Thể"
+              >
+                @for (cat of listOfOptions; track cat.value) {
+                  <nz-option [nzLabel]="cat.name" [nzValue]="cat.value"></nz-option>
+                }
+              </nz-select>
+            </div>
+            <div class="flex items-center w-20">
               @if(!isFixedForm){
-                <button (click)="remove()"
-                class="ms-3 flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
+                <button (click)="removeOption()"
+                class="ms-3 flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
                 aria-label="Delete option">
-                <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
-                  <path
-                    fill-rule="evenodd"
-                    d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z"
-                    clip-rule="evenodd" />
-                </svg>
+                <svg class="text-gray-3 fill-current cursor-pointer" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7.08333 6.62728C7.26743 6.62728 7.41667 6.77652 7.41667 6.96061V10.9606C7.41667 11.1447 7.26743 11.2939 7.08333 11.2939H6.58333C6.39924 11.2939 6.25 11.1447 6.25 10.9606V6.96061C6.25 6.77652 
+                  6.39924 6.62728 6.58333 6.62728H7.08333zM9.41667 11.2939C9.60076 11.2939 9.75 11.1447 9.75 10.9606V6.96061C9.75 6.77652 9.60076 6.62728 9.41667 6.62728H8.91667C8.73257 6.62728 8.58333 6.77652 8.58333 6.96061V10.9606C8.58333 
+                  11.1447 8.73257 11.2939 8.91667 11.2939H9.41667z" fill-opacity="1"></path><path d="M5.41667 2.62728C5.41667 1.75283 6.12555 1.04395 7 1.04395H9C9.87445 1.04395 10.5833 1.75283 10.5833 2.62728V3.29395H13.6667C13.8508 3.29395 
+                  14 3.44318 14 3.62728V4.29395C14 4.47804 13.8508 4.62728 13.6667 4.62728H12.9776L12.4171 12.3868C12.3935 12.7147 12.373 12.9988 12.3374 13.2326C12.2997 13.4802 12.2383 13.7245 12.1044 13.9573C11.9038 14.3064 11.6024 14.5868 
+                  11.2397 14.7619C10.9979 14.8786 10.7498 14.9222 10.5 14.942C10.2643 14.9606 9.97955 14.9606 9.65082 14.9606H6.34901C6.02029 14.9606 5.73548 14.9606 5.49975 14.942C5.25003 14.9222 5.00194 14.8786 4.76007 14.7619C4.39741 14.5868 
+                  4.09603 14.3064 3.89535 13.9573C3.76151 13.7245 3.70013 13.4802 3.66242 13.2326C3.62682 12.9988 3.60631 12.7147 3.58264 12.3868L3.02223 4.62728H2.33333C2.14924 4.62728 2 4.47804 2 4.29395V3.62728C2 3.44318 2.14924 3.29395 
+                  2.33333 3.29395H5.41667V2.62728ZM4.35904 4.62728L4.91074 12.2663C4.9367 12.6257 4.95386 12.8565 4.98056 13.0318C5.00602 13.1991 5.03321 13.2614 5.05131 13.2929C5.11821 13.4092 5.21867 13.5027 5.33955 13.561C5.37227 13.5768 
+                  5.43635 13.5994 5.605 13.6128C5.78179 13.6268 6.01328 13.6273 6.3736 13.6273H9.62619C9.98651 13.6273 10.218 13.6268 10.3948 13.6128C10.5634 13.5994 10.6275 13.5768 10.6602 13.561C10.7811 13.5027 10.8816 13.4092 10.9485 
+                  13.2929C10.9666 13.2614 10.9938 13.1991 11.0192 13.0318C11.0459 12.8565 11.0631 12.6257 11.089 12.2663L11.6408 4.62728H4.35904ZM9.41667 2.62728C9.41667 2.39716 9.23012 2.21061 9 2.21061H7C6.76988 2.21061 6.58333 
+                  2.39716 6.58333 2.62728V3.29395H9.41667V2.62728Z" fill-opacity="1"></path></svg>
               </button>
               }
             </div>
           </div>
+          @if(formOptionsGroup.controls['optionName'].errors?.required  && formOptionsGroup.controls['optionName'].touched) {
+            <p
+              class="mt-1 text-xs text-red-500">
+              Vui lòng điền tên biến thể
+            </p>
+          }
         </div>
         <div class="mb-4" formArrayName="variants">
           <label class="mb-2 block text-sm">Tùy chọn <span class="text-red-500">*</span></label>
           @for (variant of variants.controls; track $index) {
           <div class="flex pb-3" [formGroupName]="$index">
             @if(isFixedForm && isImage){
-              @if(getValueFormGroup($index, variant, 'image')){
-                <div class="relative me-5 h-24 w-24">
-                  <img class="w-full h-full object-contain " [src]="getValueFormGroup($index, variant, 'image')">
-                  <div class="absolute flex action-preview-img opacity-0  justify-center items-center w-full h-full top-0 right-0 ">
-                    <button (click)="removeFileImage($index, variant, 'image')">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="size-4 text-white">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                        </svg>
-                    </button>
-                  </div>
-                </div>
-              }
-              @else {
               <app-tooltip>
-                <div class="relative me-5 h-24 w-24 border border-dashed border-gray-500 bg-gray-100"
-                  [ngClass]="{'border-red-500': getValidityFormGroup($index, variant, 'image').errors?.['required'] && getValidityFormGroup($index, variant, 'image').touched}">
-                  <div
-                    class="absolute left-0 right-0 top-0 m-auto flex h-full w-full flex-wrap items-center justify-center py-2 text-center">
-                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="inline size-6">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                    </svg>
-                    <p class="w-full text-xs text-gray-500">Tải ảnh lên</p>
+                @if(getValueFormGroup($index, variant, 'image')){
+                  <div class="rounded border border-gray-300 relative me-5 h-24 w-24">
+                    <img class="w-full h-full object-contain " [src]="getValueFormGroup($index, variant, 'image')">
+                    <div class="absolute flex action-preview-img opacity-0  justify-center items-center w-full h-full top-0 right-0 ">
+                      <button (click)="removeFileImage($index, variant, 'image')">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                              stroke-width="1.5" stroke="currentColor" class="size-4 text-white">
+                              <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                          </svg>
+                      </button>
+                    </div>
                   </div>
-                </div>
+                }
+                @else {
+                  <div class="relative me-5 h-24 w-24 border border-dashed border-gray-500 bg-gray-100"
+                    [ngClass]="{'border-red-500': getValidityFormGroup($index, variant, 'image').errors?.['required'] && getValidityFormGroup($index, variant, 'image').touched}">
+                    <div
+                      class="absolute left-0 right-0 top-0 m-auto flex h-full w-full flex-wrap items-center justify-center py-2 text-center">
+                      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="inline size-6">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                      </svg>
+                      <p class="w-full text-xs text-gray-500">Tải ảnh lên</p>
+                    </div>
+                  </div>
+                }
                 <div tooltipContent class="grid grap-2 grid-cols-2 cursor-pointer">
                   <div
                       class="px-2 h-12  relative flex items-center flex-wrap justify-center cursor-pointer">
                       <input type="file"
                           class=" block opacity-0 w-full h-full z-50 cursor-pointer"
-                          (change)="onFileChange($event, variant, 'image' + $index)" [formControlName]="'image' + $index" />
+                          (change)="onFileChange($event, variant, 'image')" [formControlName]="'image'" />
                       <div class="flex items-center flex-wrap justify-center content-center absolute top-0 right-0 
                                           left-0 m-auto w-full h-full cursor-pointer">
                           <svg viewBox="0 0 20 20" fill="currentColor" class="size-6 inline">
@@ -107,7 +117,6 @@
                   </div>
                 </div>
               </app-tooltip>
-              }
             }
             <div class="block w-full items-start">
               <input
@@ -115,7 +124,7 @@
                 class="block w-full rounded-md border border-border p-2"
                 placeholder="Vui lòng điền tên biến thể"
                 [ngClass]="{'border-red-500': (getValidityFormGroup($index, variant, 'name').errors?.['required'] && getValidityFormGroup($index, variant, 'name').touched)}"
-                [formControlName]="'name' + $index" />
+                [formControlName]="'name'" />
                 @if(getValidityFormGroup($index, variant, 'name').errors?.['required'] && getValidityFormGroup($index, variant, 'name').touched){
                   <p
                     class="mt-1 text-xs text-red-500">
@@ -123,18 +132,28 @@
                   </p>
                 }
             </div>
-            <div class="flex items-center opacity-0">
-              @if(!isFixedForm){
-                <button
-                  class="ms-3 flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
-                  aria-label="Delete option">
-                  <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
-                    <path
-                      fill-rule="evenodd"
-                      d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z"
-                      clip-rule="evenodd" />
-                  </svg>
-                </button>
+            <div class="flex items-center w-20">
+              @if($index > 0){
+                <button  (click)="removeVariant($index)"
+                class="ms-3 flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground cursor-pointer"
+                aria-label="Delete varitant">
+                  <svg class="text-gray-3 fill-current cursor-pointer" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7.08333 6.62728C7.26743 6.62728 7.41667 6.77652 7.41667 6.96061V10.9606C7.41667 11.1447 7.26743 11.2939 7.08333 11.2939H6.58333C6.39924 11.2939 6.25 11.1447 6.25 10.9606V6.96061C6.25 6.77652 
+                    6.39924 6.62728 6.58333 6.62728H7.08333zM9.41667 11.2939C9.60076 11.2939 9.75 11.1447 9.75 10.9606V6.96061C9.75 6.77652 9.60076 6.62728 9.41667 6.62728H8.91667C8.73257 6.62728 8.58333 6.77652 8.58333 6.96061V10.9606C8.58333 
+                    11.1447 8.73257 11.2939 8.91667 11.2939H9.41667z" fill-opacity="1"></path><path d="M5.41667 2.62728C5.41667 1.75283 6.12555 1.04395 7 1.04395H9C9.87445 1.04395 10.5833 1.75283 10.5833 2.62728V3.29395H13.6667C13.8508 3.29395 
+                    14 3.44318 14 3.62728V4.29395C14 4.47804 13.8508 4.62728 13.6667 4.62728H12.9776L12.4171 12.3868C12.3935 12.7147 12.373 12.9988 12.3374 13.2326C12.2997 13.4802 12.2383 13.7245 12.1044 13.9573C11.9038 14.3064 11.6024 14.5868 
+                    11.2397 14.7619C10.9979 14.8786 10.7498 14.9222 10.5 14.942C10.2643 14.9606 9.97955 14.9606 9.65082 14.9606H6.34901C6.02029 14.9606 5.73548 14.9606 5.49975 14.942C5.25003 14.9222 5.00194 14.8786 4.76007 14.7619C4.39741 14.5868 
+                    4.09603 14.3064 3.89535 13.9573C3.76151 13.7245 3.70013 13.4802 3.66242 13.2326C3.62682 12.9988 3.60631 12.7147 3.58264 12.3868L3.02223 4.62728H2.33333C2.14924 4.62728 2 4.47804 2 4.29395V3.62728C2 3.44318 2.14924 3.29395 
+                    2.33333 3.29395H5.41667V2.62728ZM4.35904 4.62728L4.91074 12.2663C4.9367 12.6257 4.95386 12.8565 4.98056 13.0318C5.00602 13.1991 5.03321 13.2614 5.05131 13.2929C5.11821 13.4092 5.21867 13.5027 5.33955 13.561C5.37227 13.5768 
+                    5.43635 13.5994 5.605 13.6128C5.78179 13.6268 6.01328 13.6273 6.3736 13.6273H9.62619C9.98651 13.6273 10.218 13.6268 10.3948 13.6128C10.5634 13.5994 10.6275 13.5768 10.6602 13.561C10.7811 13.5027 10.8816 13.4092 10.9485 
+                    13.2929C10.9666 13.2614 10.9938 13.1991 11.0192 13.0318C11.0459 12.8565 11.0631 12.6257 11.089 12.2663L11.6408 4.62728H4.35904ZM9.41667 2.62728C9.41667 2.39716 9.23012 2.21061 9 2.21061H7C6.76988 2.21061 6.58333 
+                    2.39716 6.58333 2.62728V3.29395H9.41667V2.62728Z" fill-opacity="1"></path></svg>
+               </button>
+               <button class="ms-3 flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground cursor-move">
+                <svg fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                  <path fill="currentColor" stroke="none" d="M17 8h2v2h-2V8ZM17 23h2v2h-2v-2ZM17 38h2v2h-2v-2ZM29 8h2v2h-2V8ZM29 23h2v2h-2v-2ZM29 38h2v2h-2v-2Z">
+                </path><path d="M17 8h2v2h-2V8ZM17 23h2v2h-2v-2ZM17 38h2v2h-2v-2ZM29 8h2v2h-2V8ZM29 23h2v2h-2v-2ZM29 38h2v2h-2v-2Z"></path></svg>
+               </button>
               }
             </div>
           </div>
@@ -157,13 +176,17 @@
 @else {
   <div class="mb-4 flex min-w-full items-center rounded-xl border border-muted/20 bg-gray-100 px-5 py-3 transition-all duration-500">
     <div class="mb-4 w-full flex flex-col">
-      <label class="mb-1"> Size</label>
+      @if(formOptionsGroup.controls['optionName']){
+        <label class="mb-1">{{formOptionsGroup.controls['optionName'].value}}</label>
+      }
       <div class="flex flex-row">
         @for (variant of variants.controls; track $index) {
           <div class="flex items-center border border-border rounded-full bg-gray-300 w-max px-3 py-1 me-3">
-            <div class="inline-block me-2 h-6 w-6">
-              <img class="w-full h-full object-contain " [src]="getValueFormGroup($index, variant, 'image')">
-            </div>
+            @if(this.isFixedForm && this.isImage){
+              <div class="inline-block me-2 h-6 w-6">
+                  <img class="w-full h-full object-contain " [src]="getValueFormGroup($index, variant, 'image')">
+              </div>
+            }
             <label class="inline">{{getValueFormGroup($index, variant, 'name')}}</label>
           </div>
         }

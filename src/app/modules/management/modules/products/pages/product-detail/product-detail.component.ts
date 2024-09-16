@@ -18,6 +18,8 @@ export class ProductDetailComponent implements OnInit {
 
   loadedOptions: any = {};
 
+  confirmedOptions: any = [];
+
   productForm: FormGroup;
 
   config: AngularEditorConfig = {
@@ -306,7 +308,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   turnOffOptions() {
-    
+
     for (let idx in this.loadedOptions) {
       this.productForm.removeControl('option' + idx);
       this.loadedOptions[idx].destroy();
@@ -337,22 +339,37 @@ export class ProductDetailComponent implements OnInit {
     const countLoadedOptions = Object.getOwnPropertyNames(this.loadedOptions).length;
 
     const isFixedForm = countLoadedOptions <= 0;
-    console.log("🚀 ~ ProductDetailComponent ~ addOption ~ this.loadedOptions:", this.loadedOptions)
 
     ref.init(uId, formOptionsGroup, isFixedForm) // Will be used to know which index should be removed
 
     this.loadedOptions[uId] = componentRef
-    console.log("🚀 ~ ProductDetailComponent ~ addOption ~ this.loadedOptions:", this.loadedOptions)
 
-    // Subscribing to the EventEmitter from the chip
+    this.eventEmitDeletion(ref);
+    this.evnetEmitOptionsAndVariants(ref);
+  }
+
+  eventEmitDeletion(ref: any) {
+    // Subscribing to the EventEmitter from the option
     ref.emitDeletion.subscribe((index: number) => {
       this._removeOption(index)
     })
   }
 
+  evnetEmitOptionsAndVariants(ref: any) {
+    // Subscribing to the EventEmitter from the option
+    ref.emitOptionsAndVariants.subscribe((option: any) => {
+      console.log("🚀 ~ ProductDetailComponent ~ ref.emitOptionsAndVariants.subscribe ~ option:", option)
+      const existConfirmedOptions = this.confirmedOptions.find((c: any) => c.optionName == option.optionName);
+      if(existConfirmedOptions){
+        existConfirmedOptions.variants = option.variants;
+      }else{
+        this.confirmedOptions.push(option);
+      }
+    })
+  }
+
   private _removeOption(index: number) {
     this.loadedOptions[index].destroy();
-    console.log("🚀 ~ ProductDetailComponent ~ _removeOption ~ this.loadedOptions[index]:", this.loadedOptions[index]);
     delete this.loadedOptions[index];
     this.productForm.removeControl('option' + index);
     if (this.loadedOptions.length <= 0) {

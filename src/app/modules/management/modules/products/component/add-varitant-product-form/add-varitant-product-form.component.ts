@@ -16,8 +16,6 @@ export class AddVaritantProductFormComponent {
 
   variants: any;
 
-  idxVariant = 0;
-
   listOfOptions = [
     {
       name: 'Màu Sắc',
@@ -33,7 +31,10 @@ export class AddVaritantProductFormComponent {
 
   _indexComponent: number | undefined;
 
-  @Output() emitDeletion = new EventEmitter<number>()
+  @Output() emitDeletion = new EventEmitter<number>();
+
+  @Output() emitOptionsAndVariants = new EventEmitter<any>()
+
 
   constructor(private fb: FormBuilder) { }
 
@@ -60,55 +61,55 @@ export class AddVaritantProductFormComponent {
 
   onSubmit() {
     const variantFrom = <FormGroup>this.variants;
-    console.log("🚀 ~ AddVaritantProductFormComponent ~ onSubmit ~ variantFrom:", variantFrom)
     if (!variantFrom.valid || !this.formOptionsGroup.valid) {
       this.markFormGroupTouched(variantFrom);
       this.markFormGroupTouched(this.formOptionsGroup);
       return;
     }
     this.isSetupOptions = false;
-    this.payLoad = JSON.stringify(this.formOptionsGroup.getRawValue());
+    this.payLoad = this.formOptionsGroup.getRawValue();
+    this.emitOptionsAndVariants.emit(this.payLoad);
   }
 
   getValidityFormGroup(i: any, variant: FormGroup, controlName: string) {
-    const variantFromControl = variant.controls[controlName + i] as any;
+    const variantFromControl = variant.controls[controlName] as any;
     const errorsVariantFromControl = variantFromControl;
     return errorsVariantFromControl;
   }
 
   getValueFormGroup(i: any, variant: FormGroup, controlName: string) {
-    const variantFromControl = variant.controls[controlName + i] as any;
-    if (!variantFromControl.value) return '';
+    const variantFromControl = variant.controls[controlName] as any;
+    if (variantFromControl && !variantFromControl.value) return '';
     return variantFromControl.value;
   }
 
   setValueFormGroup(i: any, variant: FormGroup, controlName: string, value: any) {
-    const variantFromControl = variant.controls[controlName + i] as any;
-    if (!variantFromControl.value) return;
+    const variantFromControl = variant.controls[controlName] as any;
+    if (variantFromControl && !variantFromControl.value) return;
     variantFromControl.value = value;
   }
 
   addVariant() {
     const variantFrom = <FormGroup>this.variants;
-    if (!variantFrom.valid) {
+    if (!variantFrom.valid || !this.formOptionsGroup.valid) {
       return;
     }
-    this.idxVariant += 1;
     this.setVariantsForm();
     this.variants.push(this.variantsForm);
   }
 
   setVariantsForm() {
-    if (this.isImage) {
+    if (this.isFixedForm && this.isImage) {
       this.variantsForm = this.fb.group({
-        ['image' + this.idxVariant]: new FormControl('', [Validators.required]),
-        ['name' + this.idxVariant]: new FormControl('', [Validators.required]),
+        ['image']: new FormControl('', [Validators.required]),
+        ['name']: new FormControl('', [Validators.required]),
       });
       return;
     }
     this.variantsForm = this.fb.group({
-      ['name' + this.idxVariant]: new FormControl('', [Validators.required]),
+      ['name']: new FormControl('', [Validators.required]),
     });
+    console.log("🚀 ~ AddVaritantProductFormComponent ~ setVariantsForm ~ this.variantsForm:", this.variantsForm)
   }
 
   onFileChange(event: any, variant: FormGroup, controlName: string) {
@@ -144,7 +145,28 @@ export class AddVaritantProductFormComponent {
     this.isSetupOptions = true;
   }
 
-  remove() {
+  removeOption() {
     this.emitDeletion.emit(this._indexComponent)
+  }
+
+  removeVariant(idx: any) {
+    const variantFrom = <FormArray>this.variants;
+    variantFrom.removeAt(idx);
+    console.log("🚀 ~ AddVaritantProductFormComponent ~ removeVariant ~ variantFrom:", variantFrom)
+  }
+
+  setIsImage() {
+    const variantFrom = <FormArray>this.variants;
+    Object.keys(variantFrom.controls).forEach((key: any) => {
+      const temp = <FormGroup>variantFrom.controls[key];
+      if (!this.isImage) {
+        temp.removeControl("image");
+      } else {
+        temp.addControl("image", new FormControl('',
+          [Validators.required])
+        );
+      }
+      console.log("🚀 ~ AddVaritantProductFormComponent ~ Object.keys ~ v:", variantFrom.controls[key])
+    });
   }
 }
