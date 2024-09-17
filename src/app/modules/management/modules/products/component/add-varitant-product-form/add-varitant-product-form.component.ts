@@ -14,18 +14,9 @@ export class AddVaritantProductFormComponent {
   isImage: boolean = true;
   isFixedForm: boolean = false;
 
-  variants: any;
+  option_values: any;
 
-  listOfOptions = [
-    {
-      name: 'Màu Sắc',
-      value: 'mausac',
-    },
-    {
-      name: 'Size',
-      value: 'size',
-    },
-  ];
+  listOfOptions: any = [];
 
   isSetupOptions: boolean = true;
 
@@ -33,21 +24,21 @@ export class AddVaritantProductFormComponent {
 
   @Output() emitDeletion = new EventEmitter<number>();
 
-  @Output() emitOptionsAndVariants = new EventEmitter<any>()
+  @Output() emitOptionsAndVariants = new EventEmitter<any>();
 
+  constructor(private fb: FormBuilder) {}
 
-  constructor(private fb: FormBuilder) { }
-
-  init(index: number, formOptionsGroup: any, isFixedForm: boolean) {
+  init(index: number, formOptionsGroup: any, isFixedForm: boolean, listOfOptions: any) {
     this._indexComponent = index;
     this.formOptionsGroup = formOptionsGroup;
     this.isFixedForm = isFixedForm;
+    this.listOfOptions = listOfOptions;
   }
 
   ngOnInit() {
-    this.setVariantsForm();
-    this.variants = this.formOptionsGroup.controls['variants'] as FormArray;
-    this.variants.push(this.variantsForm);
+    this.setOptionValuesForm();
+    this.option_values = this.formOptionsGroup.controls['option_values'] as FormArray;
+    this.option_values.push(this.variantsForm);
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {
@@ -60,15 +51,18 @@ export class AddVaritantProductFormComponent {
   }
 
   onSubmit() {
-    const variantFrom = <FormGroup>this.variants;
-    if (!variantFrom.valid || !this.formOptionsGroup.valid) {
-      this.markFormGroupTouched(variantFrom);
+    const optionsValuesFrom = <FormGroup>this.option_values;
+    if (!optionsValuesFrom.valid || !this.formOptionsGroup.valid) {
+      this.markFormGroupTouched(optionsValuesFrom);
       this.markFormGroupTouched(this.formOptionsGroup);
       return;
     }
     this.isSetupOptions = false;
-    this.payLoad = this.formOptionsGroup.getRawValue();
-    this.emitOptionsAndVariants.emit(this.payLoad);
+    this.emitOptionsAndVariants.emit(this._indexComponent);
+  }
+
+  onOptionChange() {
+    console.log('🚀 ~ AddVaritantProductFormComponent ~ optionChange ~ optionChange:');
   }
 
   getValidityFormGroup(i: any, variant: FormGroup, controlName: string) {
@@ -90,15 +84,15 @@ export class AddVaritantProductFormComponent {
   }
 
   addVariant() {
-    const variantFrom = <FormGroup>this.variants;
-    if (!variantFrom.valid || !this.formOptionsGroup.valid) {
+    const optionsValuesFrom = <FormGroup>this.option_values;
+    if (!optionsValuesFrom.valid || !this.formOptionsGroup.valid) {
       return;
     }
-    this.setVariantsForm();
-    this.variants.push(this.variantsForm);
+    this.setOptionValuesForm();
+    this.option_values.push(this.variantsForm);
   }
 
-  setVariantsForm() {
+  setOptionValuesForm() {
     if (this.isFixedForm && this.isImage) {
       this.variantsForm = this.fb.group({
         ['image']: new FormControl('', [Validators.required]),
@@ -109,7 +103,7 @@ export class AddVaritantProductFormComponent {
     this.variantsForm = this.fb.group({
       ['name']: new FormControl('', [Validators.required]),
     });
-    console.log("🚀 ~ AddVaritantProductFormComponent ~ setVariantsForm ~ this.variantsForm:", this.variantsForm)
+    console.log('🚀 ~ AddVaritantProductFormComponent ~ setVariantsForm ~ this.variantsForm:', this.variantsForm);
   }
 
   onFileChange(event: any, variant: FormGroup, controlName: string) {
@@ -124,7 +118,6 @@ export class AddVaritantProductFormComponent {
   removeFileImage(idx: number, variant: FormGroup, controlName: string): void {
     this.setValueFormGroup(idx, variant, controlName, '');
   }
-
 
   private isValidImageFile(file: File): boolean {
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
@@ -146,27 +139,30 @@ export class AddVaritantProductFormComponent {
   }
 
   removeOption() {
-    this.emitDeletion.emit(this._indexComponent)
+    this.emitDeletion.emit(this._indexComponent);
   }
 
-  removeVariant(idx: any) {
-    const variantFrom = <FormArray>this.variants;
+  removeOptionValue(idx: any) {
+    const variantFrom = <FormArray>this.option_values;
     variantFrom.removeAt(idx);
-    console.log("🚀 ~ AddVaritantProductFormComponent ~ removeVariant ~ variantFrom:", variantFrom)
+    console.log('🚀 ~ AddVaritantProductFormComponent ~ removeVariant ~ variantFrom:', variantFrom);
   }
 
   setIsImage() {
-    const variantFrom = <FormArray>this.variants;
+    const variantFrom = <FormArray>this.option_values;
     Object.keys(variantFrom.controls).forEach((key: any) => {
       const temp = <FormGroup>variantFrom.controls[key];
       if (!this.isImage) {
-        temp.removeControl("image");
+        temp.removeControl('image');
       } else {
-        temp.addControl("image", new FormControl('',
-          [Validators.required])
-        );
+        temp.addControl('image', new FormControl('', [Validators.required]));
       }
-      console.log("🚀 ~ AddVaritantProductFormComponent ~ Object.keys ~ v:", variantFrom.controls[key])
+      console.log('🚀 ~ AddVaritantProductFormComponent ~ Object.keys ~ v:', variantFrom.controls[key]);
     });
+  }
+
+  getOption(id: any) {
+    const options = this.listOfOptions.find((option: any) => option._id == id);
+    return options;
   }
 }

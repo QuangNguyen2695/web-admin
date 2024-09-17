@@ -1,6 +1,24 @@
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { Component, ComponentFactoryResolver, ElementRef, OnInit, QueryList, ViewChild, ViewChildren, ViewContainerRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  Component,
+  ComponentFactoryResolver,
+  ElementRef,
+  OnInit,
+  QueryList,
+  ViewChild,
+  ViewChildren,
+  ViewContainerRef,
+} from '@angular/core';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { UtilsService } from 'src/app/base/utils.sevice';
 import { OptionsProductForm } from 'src/app/modules/management/model/options-product-form';
@@ -65,7 +83,20 @@ export class ProductDetailComponent implements OnInit {
 
   isOptions = false;
 
+  listOfOptions = [
+    {
+      display_name: 'Màu Sắc',
+      _id: '5e70047aa2f3c2574a27e4a2',
+    },
+    {
+      display_name: 'Size',
+      _id: '5e70047aa2f3c2574a27e4a3',
+    },
+  ];
+
   optionsProductForm: OptionsProductForm<string>[] = [];
+
+  variants: any = [];
 
   constructor(
     private fb: FormBuilder,
@@ -80,7 +111,7 @@ export class ProductDetailComponent implements OnInit {
     this.productImageBuilder();
   }
 
-  ngAfterViewInit(): void { }
+  ngAfterViewInit(): void {}
 
   onSubmit() {
     if (!this.productForm.valid) {
@@ -308,9 +339,8 @@ export class ProductDetailComponent implements OnInit {
   }
 
   turnOffOptions() {
-
     for (let idx in this.loadedOptions) {
-      this.productForm.removeControl('option' + idx);
+      this.productForm.removeControl('option');
       this.loadedOptions[idx].destroy();
     }
     this.loadedOptions = {};
@@ -319,53 +349,100 @@ export class ProductDetailComponent implements OnInit {
   }
 
   addOption() {
-    let componentFactory = this.componentFactoryResolver.resolveComponentFactory(AddVaritantProductFormComponent,)
-    let componentRef = this.optionsContainer.createComponent(componentFactory)
+    let componentFactory = this.componentFactoryResolver.resolveComponentFactory(AddVaritantProductFormComponent);
+    let componentRef = this.optionsContainer.createComponent(componentFactory);
 
-    let ref: any = componentRef.instance
+    let ref: any = componentRef.instance;
 
     const uId = uuid();
 
-    this.productForm.addControl(
-      'option' + (uId),
+    let optionsForm = this.productForm.controls['options'] as FormGroup;
+    if (!optionsForm) {
+      this.productForm.addControl('options', this.fb.group({}));
+      optionsForm = this.productForm.controls['options'] as FormGroup;
+      optionsForm.setValidators(this.customOptionsValidator);
+    }
+
+    optionsForm.addControl(
+      'option-' + uId,
       this.fb.group({
-        optionName: ['', Validators.required],
-        variants: this.fb.array([]),
+        option_id: ['', Validators.required],
+        option_values: this.fb.array([]),
       }),
     );
 
-    const formOptionsGroup = this.productForm.controls['option' + (uId)];
+    console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm:', this.productForm);
+
+    const formOptionsGroup = optionsForm.controls['option-' + uId];
 
     const countLoadedOptions = Object.getOwnPropertyNames(this.loadedOptions).length;
 
     const isFixedForm = countLoadedOptions <= 0;
 
-    ref.init(uId, formOptionsGroup, isFixedForm) // Will be used to know which index should be removed
+    ref.init(uId, formOptionsGroup, isFixedForm, this.listOfOptions); // Will be used to know which index should be removed
 
-    this.loadedOptions[uId] = componentRef
+    this.loadedOptions[uId] = componentRef;
 
     this.eventEmitDeletion(ref);
-    this.evnetEmitOptionsAndVariants(ref);
+    this.evnetEmitOptions(ref);
   }
+
+  customOptionsValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+    const formGroup = control as FormGroup;
+    const option = formGroup.get('option-3b49c040-a7a8-439b-89d3-0ad2ccd91761')?.get('option_id');
+
+    if (option?.value && option.valid) {
+      return null; // null => valid
+    } else {
+      return { optionsInvalid: true }; // validation errors => not valid
+    }
+  };
 
   eventEmitDeletion(ref: any) {
     // Subscribing to the EventEmitter from the option
     ref.emitDeletion.subscribe((index: number) => {
-      this._removeOption(index)
-    })
+      this._removeOption(index);
+    });
   }
 
-  evnetEmitOptionsAndVariants(ref: any) {
+  evnetEmitOptions(ref: any) {
     // Subscribing to the EventEmitter from the option
-    ref.emitOptionsAndVariants.subscribe((option: any) => {
-      console.log("🚀 ~ ProductDetailComponent ~ ref.emitOptionsAndVariants.subscribe ~ option:", option)
-      const existConfirmedOptions = this.confirmedOptions.find((c: any) => c.optionName == option.optionName);
-      if(existConfirmedOptions){
-        existConfirmedOptions.variants = option.variants;
-      }else{
+    ref.emitOptionsAndVariants.subscribe((uId: any) => {
+      let optionsForm = this.productForm.controls['options'] as FormGroup;
+      const formOptionsGroup = optionsForm.controls['option-' + uId];
+      const option = formOptionsGroup.getRawValue();
+      console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm: 1111111111', this.productForm);
+      const existConfirmedOptions = this.confirmedOptions.find((c: any) => c.option_id == option.option_id);
+      if (existConfirmedOptions) {
+        existConfirmedOptions.option_values = option.option_values;
+      } else {
         this.confirmedOptions.push(option);
       }
-    })
+      this.variants = this.createVariants(this.confirmedOptions);
+    });
+  }
+
+  private createVariants(options: any) {
+    let sets = [[]];
+    this.confirmedOptions.forEach((option: any) => {
+      const newsets: any = [];
+      option.option_values.forEach((v: any) => {
+        v.option_id = option.option_id;
+        newsets.push(Array.from(sets, (set) => [...set, v]));
+      });
+      sets = newsets.flatMap((set: any) => set);
+    });
+    return sets.map((set) => ({
+      price: 0,
+      upc: '000000000234',
+      sku: '',
+      option_values: set,
+    }));
+  }
+
+  getOption(id: any) {
+    const options = this.listOfOptions.find((option: any) => option._id == id);
+    return options;
   }
 
   private _removeOption(index: number) {
@@ -376,7 +453,6 @@ export class ProductDetailComponent implements OnInit {
       this.turnOffOptions();
     }
   }
-
 
   // addOption() {
   //   this.productForm.addControl(
