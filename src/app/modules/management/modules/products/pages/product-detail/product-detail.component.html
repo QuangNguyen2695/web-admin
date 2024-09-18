@@ -158,7 +158,6 @@
                         }
                     </div>
                 </div>
-                
             </div>
         </div>
     </div>
@@ -218,7 +217,9 @@
         
         @if (isOptions) {
             <div class="mb-4 w-max">
-                <button class="flex items-center justify-center text-green-700 rounded-md text-sm" (click)="addOption()"
+                <button class="flex items-center justify-center text-green-700 rounded-md text-sm disabled:text-gray-300"  
+                (click)="addOption()" 
+                [disabled]="!isValidNewAddOptions"
                     aria-label="Delete option">
                     <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
                         <path

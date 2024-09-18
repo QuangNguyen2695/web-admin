@@ -1,5 +1,16 @@
+import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 
 @Component({
   selector: 'app-add-varitant-product-form',
@@ -22,9 +33,14 @@ export class AddVaritantProductFormComponent {
 
   _indexComponent: number | undefined;
 
+  duplicates: any = [];
+
   @Output() emitDeletion = new EventEmitter<number>();
 
   @Output() emitOptionsAndVariants = new EventEmitter<any>();
+
+  @Output() emitOpenSetupOptionsAndVariants = new EventEmitter<any>();
+
 
   constructor(private fb: FormBuilder) {}
 
@@ -39,6 +55,7 @@ export class AddVaritantProductFormComponent {
     this.setOptionValuesForm();
     this.option_values = this.formOptionsGroup.controls['option_values'] as FormArray;
     this.option_values.push(this.variantsForm);
+    this.option_values.setValidators(this.customDuplicateValidator);
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {
@@ -52,6 +69,7 @@ export class AddVaritantProductFormComponent {
 
   onSubmit() {
     const optionsValuesFrom = <FormGroup>this.option_values;
+    console.log('🚀 ~ AddVaritantProductFormComponent ~ onSubmit ~ optionsValuesFrom:', optionsValuesFrom);
     if (!optionsValuesFrom.valid || !this.formOptionsGroup.valid) {
       this.markFormGroupTouched(optionsValuesFrom);
       this.markFormGroupTouched(this.formOptionsGroup);
@@ -136,6 +154,7 @@ export class AddVaritantProductFormComponent {
 
   openSetup() {
     this.isSetupOptions = true;
+    this.emitOpenSetupOptionsAndVariants.emit(this._indexComponent);
   }
 
   removeOption() {
@@ -165,4 +184,45 @@ export class AddVaritantProductFormComponent {
     const options = this.listOfOptions.find((option: any) => option._id == id);
     return options;
   }
+
+  drop(event: CdkDragDrop<object[]>) {
+    moveItemInArray(this.option_values.controls, event.previousIndex, event.currentIndex);
+  }
+
+  customDuplicateValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+    const formGroup = control as FormGroup;
+
+    if (this.duplicates) {
+      for (var i = 0; i < this.duplicates.length; i++) {
+        let errors: any = (formGroup.controls[this.duplicates[i]].get('name')?.errors as Object) || {};
+        delete errors['duplicated'];
+        formGroup.controls[this.duplicates[i]].get('name')?.setErrors(errors as ValidationErrors);
+      }
+    }
+
+    let dict: any = {};
+    Object.values(formGroup.controls).forEach((control, idx) => {
+      const name = control.get('name')?.value;
+      dict[name] = dict[name] || [];
+      dict[name].push(idx);
+    });
+    let duplicates: any[] = [];
+    for (var key in dict) {
+      if (dict[key].length > 1) duplicates = duplicates.concat(dict[key]);
+    }
+    for (const index of duplicates) {
+      formGroup.controls[index+1].get('name')?.setErrors({ duplicated: true });
+      console.log("🚀 ~ AddVaritantProductFormComponent ~ +index:", +index)
+    }
+    console.log('🚀 ~ AddVaritantProductFormComponent ~ dict:', dict);
+    console.log('🚀 ~ AddVaritantProductFormComponent ~ duplicates:', duplicates);
+    console.log('🚀 ~ AddVaritantProductFormComponent ~ formGroup:', formGroup);
+
+    if (duplicates.length <= 0) {
+      return null;
+    } else {
+      return { optionValueDuplicated: true };
+    }
+  };
+
 }

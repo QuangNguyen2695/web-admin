@@ -82,15 +82,18 @@ export class ProductDetailComponent implements OnInit {
   ];
 
   isOptions = false;
+  isValidNewAddOptions = false;
 
   listOfOptions = [
     {
       display_name: 'Màu Sắc',
       _id: '5e70047aa2f3c2574a27e4a2',
+      isSelected: false,
     },
     {
       display_name: 'Size',
       _id: '5e70047aa2f3c2574a27e4a3',
+      isSelected: false,
     },
   ];
 
@@ -349,6 +352,8 @@ export class ProductDetailComponent implements OnInit {
   }
 
   addOption() {
+    let optionsForm = this.productForm.controls['options'] as FormGroup;
+
     let componentFactory = this.componentFactoryResolver.resolveComponentFactory(AddVaritantProductFormComponent);
     let componentRef = this.optionsContainer.createComponent(componentFactory);
 
@@ -356,7 +361,6 @@ export class ProductDetailComponent implements OnInit {
 
     const uId = uuid();
 
-    let optionsForm = this.productForm.controls['options'] as FormGroup;
     if (!optionsForm) {
       this.productForm.addControl('options', this.fb.group({}));
       optionsForm = this.productForm.controls['options'] as FormGroup;
@@ -375,6 +379,8 @@ export class ProductDetailComponent implements OnInit {
 
     const formOptionsGroup = optionsForm.controls['option-' + uId];
 
+    formOptionsGroup.setValidators(this.customOptionValueValidator);
+
     const countLoadedOptions = Object.getOwnPropertyNames(this.loadedOptions).length;
 
     const isFixedForm = countLoadedOptions <= 0;
@@ -385,16 +391,36 @@ export class ProductDetailComponent implements OnInit {
 
     this.eventEmitDeletion(ref);
     this.evnetEmitOptions(ref);
+    this.evnetEmitOpenSetupOption(ref);
+
+    this.isValidNewAddOptions = optionsForm?.valid;
   }
+
+  customOptionValueValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+    const formGroup = control as FormGroup;
+    const option_id = formGroup.get('option_id');
+    const option_values = formGroup.get('option_values');
+
+    if ((option_id?.value && option_id.valid) || (option_values?.value && option_values.valid)) {
+      return null; // null => valid
+    } else {
+      return { optionInvalid: true }; // validation errors => not valid
+    }
+  };
 
   customOptionsValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
     const formGroup = control as FormGroup;
-    const option = formGroup.get('option-3b49c040-a7a8-439b-89d3-0ad2ccd91761')?.get('option_id');
 
-    if (option?.value && option.valid) {
+    let formGroupValid = false;
+
+    Object.values(formGroup.controls).forEach((control) => {
+      formGroupValid = control.valid;
+    });
+
+    if (formGroupValid) {
       return null; // null => valid
     } else {
-      return { optionsInvalid: true }; // validation errors => not valid
+      return { optionsGroupInvalid: true }; // validation errors => not valid
     }
   };
 
@@ -412,26 +438,62 @@ export class ProductDetailComponent implements OnInit {
       const formOptionsGroup = optionsForm.controls['option-' + uId];
       const option = formOptionsGroup.getRawValue();
       console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm: 1111111111', this.productForm);
+
+      //check isValidNewAddOptions
+      this.listOfOptions.forEach((o: any) => {
+        if (o._id == option.option_id) {
+          o.isSelected = true;
+          this.isValidNewAddOptions = false;
+        } else {
+          this.isValidNewAddOptions = true;
+        }
+      });
+
+      console.log('🚀 ~ ProductDetailComponent ~ this.listOfOptions.map ~ this.listOfOptions:', this.listOfOptions);
+
       const existConfirmedOptions = this.confirmedOptions.find((c: any) => c.option_id == option.option_id);
       if (existConfirmedOptions) {
         existConfirmedOptions.option_values = option.option_values;
       } else {
         this.confirmedOptions.push(option);
       }
-      this.variants = this.createVariants(this.confirmedOptions);
+      this.variants = this.createVariants();
     });
   }
 
-  private createVariants(options: any) {
+  evnetEmitOpenSetupOption(ref: any) {
+    ref.emitOpenSetupOptionsAndVariants.subscribe((uId: any) => {
+      let optionsForm = this.productForm.controls['options'] as FormGroup;
+      const formOptionsGroup = optionsForm.controls['option-' + uId];
+      const option = formOptionsGroup.getRawValue();
+
+      const idxConfirmedOptions = this.confirmedOptions.findIndex((c: any) => c.option_id == option.option_id);
+      this.confirmedOptions.splice(idxConfirmedOptions, 1);
+      // this.confirmedOptions.push(option);
+      this.variants = this.createVariants();
+      console.log(
+        '🚀 ~ ProductDetailComponent ~ ref.emitOpenSetupOptionsAndVariants.subscribe ~ this.variants:',
+        this.variants,
+      );
+    });
+  }
+
+  private createVariants() {
+    if (this.confirmedOptions.length <= 0) {
+      return [];
+    }
     let sets = [[]];
     this.confirmedOptions.forEach((option: any) => {
-      const newsets: any = [];
-      option.option_values.forEach((v: any) => {
-        v.option_id = option.option_id;
-        newsets.push(Array.from(sets, (set) => [...set, v]));
-      });
-      sets = newsets.flatMap((set: any) => set);
+      if (option) {
+        const newsets: any = [];
+        option.option_values.forEach((v: any) => {
+          v.option_id = option.option_id;
+          newsets.push(Array.from(sets, (set) => [...set, v]));
+        });
+        sets = newsets.flatMap((set: any) => set);
+      }
     });
+
     return sets.map((set) => ({
       price: 0,
       upc: '000000000234',
