@@ -99,8 +99,9 @@ export class ProductDetailComponent implements OnInit {
 
   optionsProductForm: OptionsProductForm<string>[] = [];
 
-  variants: any = [];
   productVariantsForm: any;
+
+  isTouchedForm = false;
 
   constructor(
     private fb: FormBuilder,
@@ -116,10 +117,9 @@ export class ProductDetailComponent implements OnInit {
     // console.log('🚀 ~ ProductDetailComponent ~ ngOnInit ~ this.variants:', this.variants);
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void { }
 
   onSubmit() {
-    console.log('🚀 ~ ProductDetailComponent ~ onSubmit ~ this.productForm:', this.productForm);
     if (!this.productForm.valid) {
       this.markFormGroupTouched(this.productForm);
       return;
@@ -252,7 +252,10 @@ export class ProductDetailComponent implements OnInit {
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {
-    Object.values(formGroup.controls).forEach((control) => {
+    Object.values(formGroup.controls).forEach((control: any) => {
+      if (control.controls) {
+        this.markFormGroupTouched(control);
+      }
       control.markAsTouched();
       if (control instanceof FormGroup) {
         this.markFormGroupTouched(control);
@@ -269,12 +272,13 @@ export class ProductDetailComponent implements OnInit {
       productVariants: this.createVariantsForm(),
     });
     this.productVariantsForm = this.productForm.controls['productVariants'] as FormArray;
+    console.log("🚀 ~ ProductDetailComponent ~ formBuilder ~ this.productForm:", this.productForm);
   }
 
   variantFormBuilder() {
     return this.fb.group({
       ['price']: new FormControl('', [Validators.required]),
-      ['sku']: new FormControl('', [Validators.required]),
+      ['qty']: new FormControl('', [Validators.required]),
       ['upc']: new FormControl('', [Validators.required]),
     });
   }
@@ -355,7 +359,7 @@ export class ProductDetailComponent implements OnInit {
 
   turnOffOptions() {
     for (let idx in this.loadedOptions) {
-      this.productForm.removeControl('option');
+      this.productForm.removeControl('options');
       this.loadedOptions[idx].destroy();
     }
     this.loadedOptions = {};
@@ -384,12 +388,13 @@ export class ProductDetailComponent implements OnInit {
       this.fb.group({
         option_id: ['', Validators.required],
         option_values: this.fb.array([]),
+        isOptionSetup: true
       }),
     );
 
     const formOptionsGroup = optionsForm.controls['option-' + uId];
 
-    formOptionsGroup.setValidators(this.customOptionValueValidator);
+    formOptionsGroup.setValidators(this.customOptionValidator);
 
     const countLoadedOptions = Object.getOwnPropertyNames(this.loadedOptions).length;
 
@@ -406,15 +411,26 @@ export class ProductDetailComponent implements OnInit {
     this.isValidNewAddOptions = optionsForm?.valid;
   }
 
-  customOptionValueValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  customOptionValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
     const formGroup = control as FormGroup;
-    const option_id = formGroup.get('option_id');
-    const option_values = formGroup.get('option_values');
 
-    if ((option_id?.value && option_id.valid) || (option_values?.value && option_values.valid)) {
+    let formGroupValid = false;
+    let hasFormGroupInValid = false;
+
+    Object.values(formGroup.controls).forEach((control) => {
+      if (!hasFormGroupInValid) {
+        formGroupValid = control.valid;
+      }
+      if (!formGroupValid) {
+        hasFormGroupInValid = true;
+      }
+    });
+
+    if (formGroupValid) {
       return null; // null => valid
     } else {
-      return { optionInvalid: true }; // validation errors => not valid
+
+      return { optionGroupInvalid: true }; // validation errors => not valid
     }
   };
 
@@ -467,11 +483,7 @@ export class ProductDetailComponent implements OnInit {
       } else {
         this.confirmedOptions.push(option);
       }
-      this.productVariantsForm = this.createVariantsForm();
-      console.log(
-        '🚀 ~ ProductDetailComponent ~ ref.emitOptionsAndVariants.subscribe ~ this.productVariantsForm:',
-        this.productVariantsForm,
-      );
+      this.productForm.controls["productVariants"] = this.createVariantsForm();
       console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm: 1111111111', this.productForm);
     });
   }
@@ -483,13 +495,9 @@ export class ProductDetailComponent implements OnInit {
       const option = formOptionsGroup.getRawValue();
 
       const idxConfirmedOptions = this.confirmedOptions.findIndex((c: any) => c.option_id == option.option_id);
-      this.confirmedOptions.splice(idxConfirmedOptions, 1);
+      this.confirmedOptions[idxConfirmedOptions].option_values = [];
       // this.confirmedOptions.push(option);
-      // this.variants = this.createVariants();
-      console.log(
-        '🚀 ~ ProductDetailComponent ~ ref.emitOpenSetupOptionsAndVariants.subscribe ~ this.variants:',
-        this.variants,
-      );
+      this.productForm.controls["productVariants"] = this.createVariantsForm();
     });
   }
 
@@ -504,11 +512,20 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
-  getValueVariantFormGroup(i: any, variant: FormGroup, controlName: string) {
-    const variantFromControl = variant.controls[controlName] as any;
-    if (variantFromControl && !variantFromControl.value) return '';
-    console.log("🚀 ~ ProductDetailComponent ~ getValueVariantFormGroup ~ variantFromControl.value:", variantFromControl.value)
-    return variantFromControl.value;
+  checkConfirmedOptionsValid() {
+    const confirmedOptionsValid = this.confirmedOptions.find((c: any) => c.option_values.length > 0);
+    return confirmedOptionsValid ? true : false;
+  }
+
+  getFormGroup(i: any, formControl: FormGroup, controlName: string) {
+    const formGroup = formControl.controls[controlName] as any;
+    if (formGroup && !formGroup) return '';
+    return formGroup;
+  }
+
+  getItemProductForm(controlName: string) {
+    const fromControl = this.productForm.controls[controlName] as any;
+    return fromControl;
   }
 
   private createVariantsForm() {
@@ -521,37 +538,29 @@ export class ProductDetailComponent implements OnInit {
           v.option_id = option.option_id;
           newsets.push(Array.from(sets, (set) => [...set, v]));
         });
-        sets = newsets.flatMap((set: any) => set);
+        sets = newsets.length > 0 ? newsets.flatMap((set: any) => set) : sets;
       }
     });
 
-    // return this.fb.group({
-    //   ['price']: new FormControl('', [Validators.required]),
-    //   ['sku']: new FormControl('', [Validators.required]),
-    //   ['upc']: new FormControl('', [Validators.required]),
-    //   ['option_values']: this.fb.array([]),
-    // });
+
     let variantsForm = this.fb.array([]) as FormArray;
 
     sets.forEach((set: any) => {
-      console.log('🚀 ~ ProductDetailComponent ~ createVariantsForm ~ set:', set);
 
       const variantForm = this.fb.group({
         ['price']: new FormControl('', [Validators.required]),
-        ['sku']: new FormControl('', [Validators.required]),
+        ['qty']: new FormControl('', [Validators.required]),
         ['upc']: new FormControl('', [Validators.required]),
         ['option_values']: new Array(),
       });
-
+      const option_values: any = variantForm.controls['option_values'];
+      option_values.value = [];
       set.forEach((s: any) => {
-        const option_values: any = variantForm.controls['option_values'];
-        option_values.value = [];
         option_values.value.push(s);
       });
 
       variantsForm.push(variantForm);
     });
-    console.log('🚀 ~ ProductDetailComponent ~ sets.forEach ~ variantsForm:', variantsForm);
     return variantsForm;
     // return sets.map((set) => ({}));
   }

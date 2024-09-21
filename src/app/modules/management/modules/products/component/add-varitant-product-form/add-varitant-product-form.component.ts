@@ -29,8 +29,6 @@ export class AddVaritantProductFormComponent {
 
   listOfOptions: any = [];
 
-  isSetupOptions: boolean = true;
-
   _indexComponent: number | undefined;
 
   duplicates: any = [];
@@ -42,7 +40,7 @@ export class AddVaritantProductFormComponent {
   @Output() emitOpenSetupOptionsAndVariants = new EventEmitter<any>();
 
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder) { }
 
   init(index: number, formOptionsGroup: any, isFixedForm: boolean, listOfOptions: any) {
     this._indexComponent = index;
@@ -59,7 +57,10 @@ export class AddVaritantProductFormComponent {
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {
-    Object.values(formGroup.controls).forEach((control) => {
+    Object.values(formGroup.controls).forEach((control: any) => {
+      if (control.controls) {
+        this.markFormGroupTouched(control);
+      }
       control.markAsTouched();
       if (control instanceof FormGroup) {
         this.markFormGroupTouched(control);
@@ -67,35 +68,32 @@ export class AddVaritantProductFormComponent {
     });
   }
 
-  onSubmit() {
-    const optionsValuesFrom = <FormGroup>this.option_values;
-    console.log('🚀 ~ AddVaritantProductFormComponent ~ onSubmit ~ optionsValuesFrom:', optionsValuesFrom);
-    if (!optionsValuesFrom.valid || !this.formOptionsGroup.valid) {
-      this.markFormGroupTouched(optionsValuesFrom);
+  onSubmit(isAuto?: boolean) {
+    if (!this.formOptionsGroup.valid) {
       this.markFormGroupTouched(this.formOptionsGroup);
       return;
     }
-    this.isSetupOptions = false;
+    this.formOptionsGroup.controls['isOptionSetup'].value = false;
     this.emitOptionsAndVariants.emit(this._indexComponent);
   }
 
-  onOptionChange() {
-    console.log('🚀 ~ AddVaritantProductFormComponent ~ optionChange ~ optionChange:');
+  onAutoOptionSubmit() {
+    this.emitOptionsAndVariants.emit(this._indexComponent);
   }
 
-  getValidityFormGroup(i: any, variant: FormGroup, controlName: string) {
+  getValidityFormGroup(variant: FormGroup, controlName: string) {
     const variantFromControl = variant.controls[controlName] as any;
     const errorsVariantFromControl = variantFromControl;
     return errorsVariantFromControl;
   }
 
-  getValueFormGroup(i: any, variant: FormGroup, controlName: string) {
+  getValueFormGroup(variant: FormGroup, controlName: string) {
     const variantFromControl = variant.controls[controlName] as any;
     if (variantFromControl && !variantFromControl.value) return '';
     return variantFromControl.value;
   }
 
-  setValueFormGroup(i: any, variant: FormGroup, controlName: string, value: any) {
+  setValueFormGroup(variant: FormGroup, controlName: string, value: any) {
     const variantFromControl = variant.controls[controlName] as any;
     if (variantFromControl && !variantFromControl.value) return;
     variantFromControl.value = value;
@@ -134,7 +132,7 @@ export class AddVaritantProductFormComponent {
   }
 
   removeFileImage(idx: number, variant: FormGroup, controlName: string): void {
-    this.setValueFormGroup(idx, variant, controlName, '');
+    this.setValueFormGroup(variant, controlName, '');
   }
 
   private isValidImageFile(file: File): boolean {
@@ -153,7 +151,7 @@ export class AddVaritantProductFormComponent {
   }
 
   openSetup() {
-    this.isSetupOptions = true;
+    this.formOptionsGroup.controls['isOptionSetup'].value = true;
     this.emitOpenSetupOptionsAndVariants.emit(this._indexComponent);
   }
 
@@ -211,7 +209,7 @@ export class AddVaritantProductFormComponent {
       if (dict[key].length > 1) duplicates = duplicates.concat(dict[key]);
     }
     for (const index of duplicates) {
-      formGroup.controls[index+1].get('name')?.setErrors({ duplicated: true });
+      formGroup.controls[index + 1].get('name')?.setErrors({ duplicated: true });
       console.log("🚀 ~ AddVaritantProductFormComponent ~ +index:", +index)
     }
     console.log('🚀 ~ AddVaritantProductFormComponent ~ dict:', dict);

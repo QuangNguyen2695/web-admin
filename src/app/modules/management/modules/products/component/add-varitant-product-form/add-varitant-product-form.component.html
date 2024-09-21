@@ -1,6 +1,6 @@
 
 {{this._indexComponent}}
-@if(isSetupOptions){
+@if(getValueFormGroup(formOptionsGroup,'isOptionSetup')){
   @if(this.formOptionsGroup){
     <div class="mb-4 flex min-w-full flex-col rounded-xl border border-muted/20 bg-gray-100 px-5 py-3 transition-all duration-500">
       <form [formGroup]="formOptionsGroup" (ngSubmit)="onSubmit()">
@@ -17,9 +17,7 @@
               class="mt-1 block w-full border border-border rounded-md p-2 text-sm" 
               [ngClass]="{'border-red-500': formOptionsGroup.controls['option_id'].errors?.required  && formOptionsGroup.controls['option_id'].touched}"
               nzShowSearch 
-              formControlName="option_id" nzPlaceHolder="Vui lòng chọn 1 Biến Thể"
-              (change)="onOptionChange()"
-              >
+              formControlName="option_id" nzPlaceHolder="Vui lòng chọn 1 Biến Thể">
                 @for (cat of listOfOptions; track cat._id) {
                   <nz-option [nzLabel]="cat.display_name" [nzValue]="cat._id" [nzDisabled]="cat.isSelected"></nz-option>
                 }
@@ -53,15 +51,15 @@
           }
         </div>
         <div class="mb-4" formArrayName="option_values" >
-          <label class="mb-2 block text-sm">Tùy chọn <span class="text-red-500">*</span></label>
+          <label class="mb-2 block text-sm">Tùy chọn <span class="text-red-500"> *</span></label>
           <div cdkDropList (cdkDropListDropped)="drop($event)">
             @for (ov of option_values.controls; track ov) {
               <div class="flex mb-3" [formGroupName]="$index" cdkDrag>
                 @if(isFixedForm && isImage){
                   <app-tooltip>
-                    @if(getValueFormGroup($index, ov, 'image')){
+                    @if(getValueFormGroup(ov, 'image')){
                       <div class="rounded border border-gray-300 relative me-5 h-24 w-24">
-                        <img class="w-full h-full object-contain " [src]="getValueFormGroup($index, ov, 'image')">
+                        <img class="w-full h-full object-contain " [src]="getValueFormGroup(ov, 'image')">
                         <div class="absolute flex action-preview-img opacity-0  justify-center items-center w-full h-full top-0 right-0 ">
                           <button (click)="removeFileImage($index, ov, 'image')">
                               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -75,7 +73,7 @@
                     }
                     @else {
                       <div class="relative me-5 h-24 w-24 border border-dashed border-gray-500 bg-gray-100"
-                        [ngClass]="{'border-red-500': getValidityFormGroup($index, ov, 'image').errors?.['required'] && getValidityFormGroup($index, ov, 'image').touched}">
+                        [ngClass]="{'border-red-500': getValidityFormGroup(ov, 'image').errors?.['required'] && getValidityFormGroup(ov, 'image').touched}">
                         <div
                           class="absolute left-0 right-0 top-0 m-auto flex h-full w-full flex-wrap items-center justify-center py-2 text-center">
                           <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="inline size-6">
@@ -125,15 +123,15 @@
                     type="text"
                     class="block w-full rounded-md border border-border p-2"
                     placeholder="Vui lòng điền tên biến thể"
-                    [ngClass]="{'border-red-500': (getValidityFormGroup($index, ov, 'name').errors?.['required'] && getValidityFormGroup($index, ov, 'name').touched)}"
-                    [formControlName]="'name'" />
-                    @if(getValidityFormGroup($index, ov, 'name').errors?.['required'] && getValidityFormGroup($index, ov, 'name').touched){
+                    [ngClass]="{'border-red-500': (getValidityFormGroup(ov, 'name').errors?.['required'] && getValidityFormGroup(ov, 'name').touched)}"
+                    [formControlName]="'name'">
+                    @if(getValidityFormGroup(ov, 'name').errors?.['required'] && getValidityFormGroup(ov, 'name').touched){
                       <p
                         class="mt-1 text-xs text-red-500">
                         Vui lòng nhập một tùy chọn
                       </p>
                     }
-                    @if(getValidityFormGroup($index, ov, 'name').errors?.['duplicated'] && getValidityFormGroup($index, ov, 'name').touched){
+                    @if(getValidityFormGroup(ov, 'name').errors?.['duplicated'] && getValidityFormGroup(ov, 'name').touched){
                       <p
                         class="mt-1 text-xs text-red-500">
                         Tùy chọn đã tồn tại
@@ -193,10 +191,10 @@
           <div class="flex items-center border border-border rounded-full bg-gray-300 w-max px-3 py-1 me-3">
             @if(this.isFixedForm && this.isImage){
               <div class="inline-block me-2 h-6 w-6">
-                  <img class="w-full h-full object-contain " [src]="getValueFormGroup($index, ov, 'image')">
+                  <img class="w-full h-full object-contain " [src]="getValueFormGroup(ov, 'image')">
               </div>
             }
-            <label class="inline">{{getValueFormGroup($index, ov, 'name')}}</label>
+            <label class="inline">{{getValueFormGroup(ov, 'name')}}</label>
           </div>
         }
       </div>

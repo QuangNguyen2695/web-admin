@@ -229,7 +229,6 @@
             <div class="mb-4 w-max">
                 <button class="flex items-center justify-center text-green-700 rounded-md text-sm disabled:text-gray-300"  
                 (click)="addOption()" 
-                [disabled]="!isValidNewAddOptions"
                     aria-label="Delete option">
                     <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
                         <path
@@ -255,7 +254,9 @@
                                 <th class="p-2 border-b border-border text-sm font-normal">Tên Biến Thể</th>
                             }@else {
                                 @for(confirmedOption of confirmedOptions; track $index){
-                                    <th class="p-2 border-b border-border text-sm font-normal">{{getOption(confirmedOption.option_id)?.display_name}}</th>
+                                    @if(confirmedOption.option_values.length > 0){
+                                        <th class="p-2 border-b border-border text-sm font-normal">{{getOption(confirmedOption.option_id)?.display_name}}</th>
+                                    }
                                 }
                             }
                         }
@@ -266,58 +267,52 @@
                     </tr>
                 </thead>
                 <tbody formArrayName="productVariants">
-                    @if(isOptions){
-                        @if(confirmedOptions.length <= 0){
-                            <tr>
-                                <td colspan="4" class="h-32 text-center">
-                                    Không có SKU nào sẵn có
-                                </td>
-                            </tr>
-                        }@else {
-                            @for(variant of productVariantsForm.controls; track variant){
-                                <tr>
-                                    @for(variantValue of getValueVariantFormGroup($index, variant, 'option_values'); track variantValue){
-                                        <td class="p-2 border-b border-border">
-                                            <label>{{variantValue.name}}</label>
-                                        </td>
-                                    }
-                                    <td class="p-2 border-b border-border">
-                                        <input type="text" placeholder="Giá bán" class="border border-border rounded p-1 w-full" [formControlName]="'price'" />
-                                    </td>
-                                    <td class="p-2 border-b border-border">
-                                        <input type="number" placeholder="Số lượng"
-                                            class="border border-border rounded p-1 w-full" [formControlName]="'sku'"/>
-                                    </td>
-                                    <td class="p-2 border-b border-border">
-                                        <input type="text" placeholder="SKU" class="border border-border rounded p-1 w-full" [formControlName]="'upc'"/>
-                                    </td>
-                                    <!-- <td class="p-2 border-b border-border">
-                                        <button
-                                            class="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
-                                            aria-label="Delete option">
-                                            <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
-                                                <path fill-rule="evenodd"
-                                                    d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z"
-                                                    clip-rule="evenodd" />
-                                            </svg>
-                                        </button>
-                                    </td> -->
-                                </tr>
-                            }
-                        }
+                    @if(!checkConfirmedOptionsValid() && isOptions){
+                        <tr>
+                            <td colspan="4" class="h-32 text-center">
+                                Không có SKU nào sẵn có
+                            </td>
+                        </tr>
                     }@else {
-                        @for(variant of productVariantsForm.controls; track $index){
+                        @for(variant of getItemProductForm('productVariants').controls; track variant){
                             <tr [formGroupName]="$index">
-                                <td class="p-2 border-b border-border">
-                                    <input type="text" placeholder="Giá bán" class="border border-border rounded p-1 w-full" [formControlName]="'price'"/>
+                                @for(variantValue of getFormGroup($index, variant, 'option_values').value; track variantValue){
+                                    <td class="p-2 border-b border-border content-baseline">
+                                        <label>{{variantValue.name}}</label>
+                                    </td>
+                                }
+                                
+                                <td class="p-2 border-b border-border content-baseline">
+                                    <input type="text" placeholder="Giá bán" class="border border-border rounded p-1 w-full" [formControlName]="'price'" 
+                                        [ngClass]="{'border-red-500 border border-border' : getFormGroup($index, variant, 'price').errors?.['required'] 
+                                        && getFormGroup($index, variant, 'price').touched}"/>
+                                    <p class="mt-1 text-xs text-red-500" 
+                                        *ngIf="getFormGroup($index, variant, 'price').errors?.['required'] && getFormGroup($index, variant, 'price').touched">
+                                        Vui lòng điền vào trường này</p>
                                 </td>
-                                <td class="p-2 border-b border-border">
+                                <td class="p-2 border-b border-border content-baseline">
                                     <input type="number" placeholder="Số lượng"
-                                        class="border border-border rounded p-1 w-full" [formControlName]="'sku'"/>
+                                        class="border border-border rounded p-1 w-full" [formControlName]="'qty'"
+                                        [ngClass]="{'border-red-500 border border-border' : getFormGroup($index, variant, 'qty').errors?.['required'] 
+                                        && getFormGroup($index, variant, 'qty').touched}"/>
+                                    <p class="mt-1 text-xs text-red-500" 
+                                        *ngIf="getFormGroup($index, variant, 'qty').errors?.['required'] && getFormGroup($index, variant, 'qty').touched">
+                                        Vui lòng điền vào trường này</p>
                                 </td>
-                                <td class="p-2 border-b border-border">
+                                <td class="p-2 border-b border-border content-baseline">
                                     <input type="text" placeholder="SKU" class="border border-border rounded p-1 w-full" [formControlName]="'upc'"/>
                                 </td>
+                                <!-- <td class="p-2 border-b border-border">
+                                    <button
+                                        class="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
+                                        aria-label="Delete option">
+                                        <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                                            <path fill-rule="evenodd"
+                                                d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </td> -->
                             </tr>
                         }
                     }
