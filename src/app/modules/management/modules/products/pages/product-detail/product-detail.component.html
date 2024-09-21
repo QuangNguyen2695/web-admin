@@ -14,8 +14,8 @@
                     <app-tooltip class="mt-2">
                         <div class="box-file-main select-none rounded border border-dashed border-gray-500 relative"
                             [ngClass]="{'bg-gray-100': productMainImage.disable,
-                                 'border-red-500' : productForm.controls['productMainImage'].errors?.['required'] && productForm.controls['productMainImage'].touched
-                                 }">
+                                 'border-red-500' : productForm.controls['productMainImage'].errors?.['required'] 
+                                 && productForm.controls['productMainImage'].touched}">
                             <div class="flex items-center flex-wrap content-center
                                  left-0 m-auto w-full h-full block mx-auto-8 px-4">
                                 <div class="flex flex-wrap justify-center text-center w-full pb-5">
@@ -165,7 +165,9 @@
         <div class="mb-4">
             <label class="block text-sm">Tên sản phẩm <span class="text-red-500">*</span></label>
             <input type="text" class="mt-1 block w-full border border-border rounded-md p-2 text-sm" formControlName="productName"
-                placeholder="[Thương hiệu] + [Nội dung] + [Phụ kiện áp dụng] + [Loại sản phẩm] + [Chức năng / Tính năng chính]" />
+                placeholder="[Thương hiệu] + [Nội dung] + [Phụ kiện áp dụng] + [Loại sản phẩm] + [Chức năng / Tính năng chính]" 
+                [ngClass]="{'border-red-500' : productForm.controls['productName'].errors?.['required'] 
+                && productForm.controls['productName'].touched}"/>
             <p class="mt-1 text-xs text-red-500"
                 *ngIf="productForm.controls['productName'].errors?.['required'] && productForm.controls['productName'].touched">
                 Vui lòng điền vào trường này</p>
@@ -173,7 +175,9 @@
 
         <div class="mb-4">
             <label class="block text-sm">Hạng mục <span class="text-red-500">*</span></label>
-            <nz-select nzShowSearch class="mt-1 block w-full border border-border rounded-md p-2 text-sm" formControlName="productCate" nzPlaceHolder="Vui lòng chọn 1 hạng mục">
+            <nz-select nzShowSearch class="mt-1 block w-full border border-border rounded-md p-2 text-sm" formControlName="productCate" nzPlaceHolder="Vui lòng chọn 1 hạng mục"
+            [ngClass]="{'border-red-500' : productForm.controls['productCate'].errors?.['required'] 
+                && productForm.controls['productCate'].touched}">
                 @for (cat of listOfCategory; track cat.value) {
                   <nz-option [nzLabel]="cat.name" [nzValue]="cat.value"></nz-option>
                 }
@@ -191,7 +195,13 @@
             <p class="text-xs text-muted-foreground py-2">Nên viết mô tả dài ít nhất 500 ký tự và thêm hình ảnh để giúp
                 khách
                 hàng đưa ra quyết định mua hàng.</p>
-            <angular-editor [config]="this.config"></angular-editor>
+            <div [ngClass]="{'border-red-500 border border-border' : productForm.controls['productDesc'].errors?.['required'] 
+                && productForm.controls['productDesc'].touched}">
+                <angular-editor [config]="this.config" formControlName="productDesc"></angular-editor>
+            </div>
+             <p class="mt-1 text-xs text-red-500"
+             *ngIf="productForm.controls['productDesc'].errors?.['required'] && productForm.controls['productDesc'].touched">
+             Vui lòng điền vào trường này</p>
         </div>
     </div>
 
@@ -255,31 +265,31 @@
                         <!-- <th class="p-2 border-b border-border text-sm font-normal"></th> -->
                     </tr>
                 </thead>
-                <tbody>
+                <tbody formArrayName="productVariants">
                     @if(isOptions){
-                        @if(variants.length <= 0){
+                        @if(confirmedOptions.length <= 0){
                             <tr>
                                 <td colspan="4" class="h-32 text-center">
                                     Không có SKU nào sẵn có
                                 </td>
                             </tr>
                         }@else {
-                            @for(variant of variants; track $index){
+                            @for(variant of productVariantsForm.controls; track variant){
                                 <tr>
-                                    @for(variantValue of variant.option_values; track $index){
+                                    @for(variantValue of getValueVariantFormGroup($index, variant, 'option_values'); track variantValue){
                                         <td class="p-2 border-b border-border">
-                                            <label>{{variantValue["name"]}}</label>
+                                            <label>{{variantValue.name}}</label>
                                         </td>
                                     }
                                     <td class="p-2 border-b border-border">
-                                        <input type="text" placeholder="Giá bán" class="border border-border rounded p-1 w-full" />
+                                        <input type="text" placeholder="Giá bán" class="border border-border rounded p-1 w-full" [formControlName]="'price'" />
                                     </td>
                                     <td class="p-2 border-b border-border">
                                         <input type="number" placeholder="Số lượng"
-                                            class="border border-border rounded p-1 w-full" />
+                                            class="border border-border rounded p-1 w-full" [formControlName]="'sku'"/>
                                     </td>
                                     <td class="p-2 border-b border-border">
-                                        <input type="text" placeholder="SKU" class="border border-border rounded p-1 w-full" />
+                                        <input type="text" placeholder="SKU" class="border border-border rounded p-1 w-full" [formControlName]="'upc'"/>
                                     </td>
                                     <!-- <td class="p-2 border-b border-border">
                                         <button
@@ -296,18 +306,20 @@
                             }
                         }
                     }@else {
-                        <tr>
-                            <td class="p-2 border-b border-border">
-                                <input type="text" placeholder="Giá bán" class="border border-border rounded p-1 w-full" />
-                            </td>
-                            <td class="p-2 border-b border-border">
-                                <input type="number" placeholder="Số lượng"
-                                    class="border border-border rounded p-1 w-full" />
-                            </td>
-                            <td class="p-2 border-b border-border">
-                                <input type="text" placeholder="SKU" class="border border-border rounded p-1 w-full" />
-                            </td>
-                        </tr>
+                        @for(variant of productVariantsForm.controls; track $index){
+                            <tr [formGroupName]="$index">
+                                <td class="p-2 border-b border-border">
+                                    <input type="text" placeholder="Giá bán" class="border border-border rounded p-1 w-full" [formControlName]="'price'"/>
+                                </td>
+                                <td class="p-2 border-b border-border">
+                                    <input type="number" placeholder="Số lượng"
+                                        class="border border-border rounded p-1 w-full" [formControlName]="'sku'"/>
+                                </td>
+                                <td class="p-2 border-b border-border">
+                                    <input type="text" placeholder="SKU" class="border border-border rounded p-1 w-full" [formControlName]="'upc'"/>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

@@ -100,6 +100,7 @@ export class ProductDetailComponent implements OnInit {
   optionsProductForm: OptionsProductForm<string>[] = [];
 
   variants: any = [];
+  productVariantsForm: any;
 
   constructor(
     private fb: FormBuilder,
@@ -112,11 +113,13 @@ export class ProductDetailComponent implements OnInit {
   ngOnInit() {
     this.formBuilder();
     this.productImageBuilder();
+    // console.log('🚀 ~ ProductDetailComponent ~ ngOnInit ~ this.variants:', this.variants);
   }
 
   ngAfterViewInit(): void {}
 
   onSubmit() {
+    console.log('🚀 ~ ProductDetailComponent ~ onSubmit ~ this.productForm:', this.productForm);
     if (!this.productForm.valid) {
       this.markFormGroupTouched(this.productForm);
       return;
@@ -133,7 +136,6 @@ export class ProductDetailComponent implements OnInit {
       mainImage: this.productMainImage,
       galleryImage: galleryImage,
     };
-    console.log('🚀 ~ ProductDetailComponent ~ onSubmit ~ productUpsert:', productUpsert);
   }
 
   onFileChange(event: any, currentImageIndex: number) {
@@ -263,6 +265,17 @@ export class ProductDetailComponent implements OnInit {
       productName: ['', [Validators.required, Validators.minLength(25)]],
       productMainImage: ['', Validators.required],
       productCate: ['', Validators.required],
+      productDesc: ['', Validators.required],
+      productVariants: this.createVariantsForm(),
+    });
+    this.productVariantsForm = this.productForm.controls['productVariants'] as FormArray;
+  }
+
+  variantFormBuilder() {
+    return this.fb.group({
+      ['price']: new FormControl('', [Validators.required]),
+      ['sku']: new FormControl('', [Validators.required]),
+      ['upc']: new FormControl('', [Validators.required]),
     });
   }
 
@@ -326,7 +339,6 @@ export class ProductDetailComponent implements OnInit {
         disable: true,
       },
     ];
-    console.log('🚀 ~ ProductDetailComponent ~ productImageBuilder ~ productGalleryImages:', this.productGalleryImages);
   }
 
   drop(event: CdkDragDrop<object[]>) {
@@ -374,8 +386,6 @@ export class ProductDetailComponent implements OnInit {
         option_values: this.fb.array([]),
       }),
     );
-
-    console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm:', this.productForm);
 
     const formOptionsGroup = optionsForm.controls['option-' + uId];
 
@@ -426,8 +436,18 @@ export class ProductDetailComponent implements OnInit {
 
   eventEmitDeletion(ref: any) {
     // Subscribing to the EventEmitter from the option
-    ref.emitDeletion.subscribe((index: number) => {
-      this._removeOption(index);
+    ref.emitDeletion.subscribe((uId: number) => {
+      let optionsForm = this.productForm.controls['options'] as FormGroup;
+      const formOptionsGroup = optionsForm.controls['option-' + uId];
+      const option = formOptionsGroup.getRawValue();
+      this._removeOption(uId);
+
+      this.listOfOptions.forEach((o: any) => {
+        if (o._id == option.option_id) {
+          o.isSelected = false;
+          this.isValidNewAddOptions = true;
+        }
+      });
     });
   }
 
@@ -437,19 +457,9 @@ export class ProductDetailComponent implements OnInit {
       let optionsForm = this.productForm.controls['options'] as FormGroup;
       const formOptionsGroup = optionsForm.controls['option-' + uId];
       const option = formOptionsGroup.getRawValue();
-      console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm: 1111111111', this.productForm);
 
       //check isValidNewAddOptions
-      this.listOfOptions.forEach((o: any) => {
-        if (o._id == option.option_id) {
-          o.isSelected = true;
-          this.isValidNewAddOptions = false;
-        } else {
-          this.isValidNewAddOptions = true;
-        }
-      });
-
-      console.log('🚀 ~ ProductDetailComponent ~ this.listOfOptions.map ~ this.listOfOptions:', this.listOfOptions);
+      this.checkIsValidNewAddOptions(option);
 
       const existConfirmedOptions = this.confirmedOptions.find((c: any) => c.option_id == option.option_id);
       if (existConfirmedOptions) {
@@ -457,7 +467,12 @@ export class ProductDetailComponent implements OnInit {
       } else {
         this.confirmedOptions.push(option);
       }
-      this.variants = this.createVariants();
+      this.productVariantsForm = this.createVariantsForm();
+      console.log(
+        '🚀 ~ ProductDetailComponent ~ ref.emitOptionsAndVariants.subscribe ~ this.productVariantsForm:',
+        this.productVariantsForm,
+      );
+      console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm: 1111111111', this.productForm);
     });
   }
 
@@ -470,7 +485,7 @@ export class ProductDetailComponent implements OnInit {
       const idxConfirmedOptions = this.confirmedOptions.findIndex((c: any) => c.option_id == option.option_id);
       this.confirmedOptions.splice(idxConfirmedOptions, 1);
       // this.confirmedOptions.push(option);
-      this.variants = this.createVariants();
+      // this.variants = this.createVariants();
       console.log(
         '🚀 ~ ProductDetailComponent ~ ref.emitOpenSetupOptionsAndVariants.subscribe ~ this.variants:',
         this.variants,
@@ -478,11 +493,27 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
-  private createVariants() {
-    if (this.confirmedOptions.length <= 0) {
-      return [];
-    }
+  checkIsValidNewAddOptions(option: any) {
+    this.listOfOptions.forEach((o: any) => {
+      if (o._id == option.option_id) {
+        o.isSelected = true;
+        this.isValidNewAddOptions = false;
+      } else {
+        this.isValidNewAddOptions = true;
+      }
+    });
+  }
+
+  getValueVariantFormGroup(i: any, variant: FormGroup, controlName: string) {
+    const variantFromControl = variant.controls[controlName] as any;
+    if (variantFromControl && !variantFromControl.value) return '';
+    console.log("🚀 ~ ProductDetailComponent ~ getValueVariantFormGroup ~ variantFromControl.value:", variantFromControl.value)
+    return variantFromControl.value;
+  }
+
+  private createVariantsForm() {
     let sets = [[]];
+
     this.confirmedOptions.forEach((option: any) => {
       if (option) {
         const newsets: any = [];
@@ -494,12 +525,35 @@ export class ProductDetailComponent implements OnInit {
       }
     });
 
-    return sets.map((set) => ({
-      price: 0,
-      upc: '000000000234',
-      sku: '',
-      option_values: set,
-    }));
+    // return this.fb.group({
+    //   ['price']: new FormControl('', [Validators.required]),
+    //   ['sku']: new FormControl('', [Validators.required]),
+    //   ['upc']: new FormControl('', [Validators.required]),
+    //   ['option_values']: this.fb.array([]),
+    // });
+    let variantsForm = this.fb.array([]) as FormArray;
+
+    sets.forEach((set: any) => {
+      console.log('🚀 ~ ProductDetailComponent ~ createVariantsForm ~ set:', set);
+
+      const variantForm = this.fb.group({
+        ['price']: new FormControl('', [Validators.required]),
+        ['sku']: new FormControl('', [Validators.required]),
+        ['upc']: new FormControl('', [Validators.required]),
+        ['option_values']: new Array(),
+      });
+
+      set.forEach((s: any) => {
+        const option_values: any = variantForm.controls['option_values'];
+        option_values.value = [];
+        option_values.value.push(s);
+      });
+
+      variantsForm.push(variantForm);
+    });
+    console.log('🚀 ~ ProductDetailComponent ~ sets.forEach ~ variantsForm:', variantsForm);
+    return variantsForm;
+    // return sets.map((set) => ({}));
   }
 
   getOption(id: any) {
@@ -507,10 +561,10 @@ export class ProductDetailComponent implements OnInit {
     return options;
   }
 
-  private _removeOption(index: number) {
-    this.loadedOptions[index].destroy();
-    delete this.loadedOptions[index];
-    this.productForm.removeControl('option' + index);
+  private _removeOption(uId: number) {
+    this.loadedOptions[uId].destroy();
+    delete this.loadedOptions[uId];
+    this.productForm.removeControl('option' + uId);
     if (this.loadedOptions.length <= 0) {
       this.turnOffOptions();
     }
