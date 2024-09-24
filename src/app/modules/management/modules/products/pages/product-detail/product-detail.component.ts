@@ -117,10 +117,10 @@ export class ProductDetailComponent implements OnInit {
     // console.log('🚀 ~ ProductDetailComponent ~ ngOnInit ~ this.variants:', this.variants);
   }
 
-  ngAfterViewInit(): void { }
+  ngAfterViewInit(): void {}
 
   onSubmit() {
-    if (!this.productForm.valid) {
+    if (!this.productForm.valid || this.isAnyOptionSetup()) {
       this.markFormGroupTouched(this.productForm);
       return;
     }
@@ -136,6 +136,11 @@ export class ProductDetailComponent implements OnInit {
       mainImage: this.productMainImage,
       galleryImage: galleryImage,
     };
+    this.productForm.getRawValue();
+    console.log(
+      '🚀 ~ ProductDetailComponent ~ onSubmit ~ this.productForm.getRawValue();:',
+      this.productForm.getRawValue(),
+    );
   }
 
   onFileChange(event: any, currentImageIndex: number) {
@@ -170,6 +175,17 @@ export class ProductDetailComponent implements OnInit {
       nextImage.disable = false;
     };
     reader.readAsDataURL(file);
+  }
+
+  isAnyOptionSetup() {
+    const optionsForm = this.productForm.controls['options'] as FormArray;
+    let isAnyOptionSetup = false;
+    Object.values(optionsForm.controls).forEach((optionF: any) => {
+      if (optionF && optionF.controls['isOptionSetup']?.value) {
+        isAnyOptionSetup = true;
+      }
+    });
+    return isAnyOptionSetup;
   }
 
   private isValidImageFile(file: File): boolean {
@@ -271,15 +287,13 @@ export class ProductDetailComponent implements OnInit {
       productDesc: ['', Validators.required],
       productVariants: this.createVariantsForm(),
     });
-    this.productVariantsForm = this.productForm.controls['productVariants'] as FormArray;
-    console.log("🚀 ~ ProductDetailComponent ~ formBuilder ~ this.productForm:", this.productForm);
   }
 
   variantFormBuilder() {
     return this.fb.group({
       ['price']: new FormControl('', [Validators.required]),
       ['qty']: new FormControl('', [Validators.required]),
-      ['upc']: new FormControl('', [Validators.required]),
+      ['upc']: new FormControl(''),
     });
   }
 
@@ -388,7 +402,7 @@ export class ProductDetailComponent implements OnInit {
       this.fb.group({
         option_id: ['', Validators.required],
         option_values: this.fb.array([]),
-        isOptionSetup: true
+        isOptionSetup: true,
       }),
     );
 
@@ -429,7 +443,6 @@ export class ProductDetailComponent implements OnInit {
     if (formGroupValid) {
       return null; // null => valid
     } else {
-
       return { optionGroupInvalid: true }; // validation errors => not valid
     }
   };
@@ -483,7 +496,8 @@ export class ProductDetailComponent implements OnInit {
       } else {
         this.confirmedOptions.push(option);
       }
-      this.productForm.controls["productVariants"] = this.createVariantsForm();
+      this.productForm.removeControl('productVariants');
+      this.productForm.addControl('productVariants', this.createVariantsForm());
       console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm: 1111111111', this.productForm);
     });
   }
@@ -497,7 +511,8 @@ export class ProductDetailComponent implements OnInit {
       const idxConfirmedOptions = this.confirmedOptions.findIndex((c: any) => c.option_id == option.option_id);
       this.confirmedOptions[idxConfirmedOptions].option_values = [];
       // this.confirmedOptions.push(option);
-      this.productForm.controls["productVariants"] = this.createVariantsForm();
+      this.productForm.removeControl('productVariants');
+      this.productForm.addControl('productVariants', this.createVariantsForm());
     });
   }
 
@@ -517,15 +532,10 @@ export class ProductDetailComponent implements OnInit {
     return confirmedOptionsValid ? true : false;
   }
 
-  getFormGroup(i: any, formControl: FormGroup, controlName: string) {
+  getFormGroup(formControl: FormGroup, controlName: string) {
     const formGroup = formControl.controls[controlName] as any;
     if (formGroup && !formGroup) return '';
     return formGroup;
-  }
-
-  getItemProductForm(controlName: string) {
-    const fromControl = this.productForm.controls[controlName] as any;
-    return fromControl;
   }
 
   private createVariantsForm() {
@@ -542,15 +552,13 @@ export class ProductDetailComponent implements OnInit {
       }
     });
 
-
     let variantsForm = this.fb.array([]) as FormArray;
 
     sets.forEach((set: any) => {
-
       const variantForm = this.fb.group({
         ['price']: new FormControl('', [Validators.required]),
         ['qty']: new FormControl('', [Validators.required]),
-        ['upc']: new FormControl('', [Validators.required]),
+        ['upc']: new FormControl(''),
         ['option_values']: new Array(),
       });
       const option_values: any = variantForm.controls['option_values'];

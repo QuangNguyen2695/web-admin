@@ -171,6 +171,9 @@
             <p class="mt-1 text-xs text-red-500"
                 *ngIf="productForm.controls['productName'].errors?.['required'] && productForm.controls['productName'].touched">
                 Vui lòng điền vào trường này</p>
+            <p class="mt-1 text-xs text-red-500"
+                *ngIf="productForm.controls['productName'].errors?.['minlength'] && productForm.controls['productName'].touched">
+                Vui lòng nhập ít nhất 25 ký tự</p>
         </div>
 
         <div class="mb-4">
@@ -274,9 +277,9 @@
                             </td>
                         </tr>
                     }@else {
-                        @for(variant of getItemProductForm('productVariants').controls; track variant){
+                        @for(variant of getFormGroup(this.productForm, 'productVariants').controls; track variant){
                             <tr [formGroupName]="$index">
-                                @for(variantValue of getFormGroup($index, variant, 'option_values').value; track variantValue){
+                                @for(variantValue of getFormGroup(variant, 'option_values').value; track variantValue){
                                     <td class="p-2 border-b border-border content-baseline">
                                         <label>{{variantValue.name}}</label>
                                     </td>
@@ -284,19 +287,19 @@
                                 
                                 <td class="p-2 border-b border-border content-baseline">
                                     <input type="text" placeholder="Giá bán" class="border border-border rounded p-1 w-full" [formControlName]="'price'" 
-                                        [ngClass]="{'border-red-500 border border-border' : getFormGroup($index, variant, 'price').errors?.['required'] 
-                                        && getFormGroup($index, variant, 'price').touched}"/>
+                                        [ngClass]="{'border-red-500 border border-border' : getFormGroup(variant, 'price').errors?.['required'] 
+                                        && getFormGroup(variant, 'price').touched}"/>
                                     <p class="mt-1 text-xs text-red-500" 
-                                        *ngIf="getFormGroup($index, variant, 'price').errors?.['required'] && getFormGroup($index, variant, 'price').touched">
+                                        *ngIf="getFormGroup(variant, 'price').errors?.['required'] && getFormGroup(variant, 'price').touched">
                                         Vui lòng điền vào trường này</p>
                                 </td>
                                 <td class="p-2 border-b border-border content-baseline">
                                     <input type="number" placeholder="Số lượng"
                                         class="border border-border rounded p-1 w-full" [formControlName]="'qty'"
-                                        [ngClass]="{'border-red-500 border border-border' : getFormGroup($index, variant, 'qty').errors?.['required'] 
-                                        && getFormGroup($index, variant, 'qty').touched}"/>
+                                        [ngClass]="{'border-red-500 border border-border' : getFormGroup(variant, 'qty').errors?.['required'] 
+                                        && getFormGroup(variant, 'qty').touched}"/>
                                     <p class="mt-1 text-xs text-red-500" 
-                                        *ngIf="getFormGroup($index, variant, 'qty').errors?.['required'] && getFormGroup($index, variant, 'qty').touched">
+                                        *ngIf="getFormGroup(variant, 'qty').errors?.['required'] && getFormGroup(variant, 'qty').touched">
                                         Vui lòng điền vào trường này</p>
                                 </td>
                                 <td class="p-2 border-b border-border content-baseline">
