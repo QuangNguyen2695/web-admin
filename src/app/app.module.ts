@@ -12,6 +12,7 @@ import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-br
 import { MaterialModule } from './library-modules/material-module';
 import { provideNzI18n, en_US } from 'ng-zorro-antd/i18n';
 import { UtilsService } from './base/utils.sevice';
+import { ENV } from '@app/env';
 
 @NgModule({
   declarations: [CreateEditOptionDialogComponent],
@@ -30,4 +31,4 @@ import { UtilsService } from './base/utils.sevice';
   providers: [provideAnimationsAsync(), provideAnimations(), provideNzI18n(en_US), UtilsService],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class AppModule { }
+export class AppModule {}

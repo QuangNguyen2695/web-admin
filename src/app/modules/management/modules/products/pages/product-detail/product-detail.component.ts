@@ -24,6 +24,7 @@ import { UtilsService } from 'src/app/base/utils.sevice';
 import { OptionsProductForm } from 'src/app/modules/management/model/options-product-form';
 import { AddVaritantProductFormComponent } from '../../component/add-varitant-product-form/add-varitant-product-form.component';
 import { v4 as uuid } from 'uuid';
+import { ProductService } from '../../../service/product.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -103,10 +104,17 @@ export class ProductDetailComponent implements OnInit {
 
   isTouchedForm = false;
 
+  isBatchEditing = false;
+
+  batchEditingPrice: any;
+  batchEditingQTY: any;
+  batchEditingSKU: any;
+
   constructor(
     private fb: FormBuilder,
     public utilsService: UtilsService,
     private componentFactoryResolver: ComponentFactoryResolver,
+    private productService: ProductService,
   ) {
     this.productForm = new FormGroup({});
   }
@@ -120,27 +128,38 @@ export class ProductDetailComponent implements OnInit {
   ngAfterViewInit(): void {}
 
   onSubmit() {
-    if (!this.productForm.valid || this.isAnyOptionSetup()) {
-      this.markFormGroupTouched(this.productForm);
-      return;
-    }
+    // if (!this.productForm.valid || this.isAnyOptionSetup()) {
+    //   this.markFormGroupTouched(this.productForm);
+    //   return;
+    // }
 
     let galleryImage: any = [];
 
     this.productGalleryImages.forEach((item: any) => {
       if (item.value) galleryImage.push(item.value);
     });
+    const uId = uuid();
 
     const productUpsert = {
+      id: uId,
       name: this.productForm.get('productName')?.value,
       mainImage: this.productMainImage,
       galleryImage: galleryImage,
+      cate: this.productForm.get('productCate')?.value,
+      desc: this.productForm.get('productDesc')?.value,
+      variants: this.productForm.get('productVariants')?.value,
     };
+    console.log('🚀 ~ ProductDetailComponent ~ onSubmit ~ productUpsert:', productUpsert);
     this.productForm.getRawValue();
     console.log(
       '🚀 ~ ProductDetailComponent ~ onSubmit ~ this.productForm.getRawValue();:',
       this.productForm.getRawValue(),
     );
+    this.uploadImageToFBStorage(productUpsert);
+  }
+
+  private uploadImageToFBStorage(productUpsert: any) {
+    this.productService.uploadImageToFBStorage(productUpsert.id, productUpsert.mainImage);
   }
 
   onFileChange(event: any, currentImageIndex: number) {
@@ -587,23 +606,17 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
-  // addOption() {
-  //   this.productForm.addControl(
-  //     'option' + this.idxOption,
-  //     this.fb.group({
-  //       optionName: ['', Validators.required],
-  //       variants: this.fb.array([]),
-  //     }),
-  //   );
-  //   console.log("🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm:", this.productForm)
-  //   this.idxOption += 1;
+  toggleBatchEditing() {
+    this.isBatchEditing = !this.isBatchEditing;
+  }
 
-  //   // this.optionsComponent.map((vcr: any, index: number) => {
-  //   //   console.log('🚀 ~ ProductDetailComponent ~ addOption ~ vcr:', vcr.nativeElement);
-  //   //   this.utilsService.createComponent(AddVaritantProductFormComponent, vcr.nativeElement, {
-  //   //     formOptionsGroup: this.productForm.controls['option' + this.idxOption],
-  //   //   });
-  //   // });
-  //   // console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.optionsComponent:', this.optionsComponent);
-  // }
+  submitBatchEditing() {
+    const variantsForm = this.getFormGroup(this.productForm, 'productVariants').controls;
+    console.log('🚀 ~ ProductDetailComponent ~ submitBatchEditing ~ variantsForm:', variantsForm);
+    Object.values(variantsForm).forEach((variant: any) => {
+      variant.patchValue({ price: this.batchEditingPrice });
+      variant.patchValue({ qty: this.batchEditingQTY });
+      variant.patchValue({ upc: this.batchEditingSKU });
+    });
+  }
 }
