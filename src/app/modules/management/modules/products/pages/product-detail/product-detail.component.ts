@@ -1,24 +1,6 @@
-import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import {
-  Component,
-  ComponentFactoryResolver,
-  ElementRef,
-  OnInit,
-  QueryList,
-  ViewChild,
-  ViewChildren,
-  ViewContainerRef,
-} from '@angular/core';
-import {
-  AbstractControl,
-  FormArray,
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { Component, ComponentFactoryResolver, OnInit, ViewChild, ViewContainerRef, } from '@angular/core';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { UtilsService } from 'src/app/base/utils.sevice';
 import { OptionsProductForm } from 'src/app/modules/management/model/options-product-form';
@@ -74,11 +56,11 @@ export class ProductDetailComponent implements OnInit {
   listOfCategory = [
     {
       name: 'Hàng dệt & Đồ nội thất mềm - Chăn ga gối đệm - Chăn',
-      value: 'Hàng dệt & Đồ nội thất mềm - Chăn ga gối đệm - Chăn',
+      value: 'asdf25asdf43436xsza',
     },
     {
       name: 'Hạng mục khác...',
-      value: 'Hạng mục khác...',
+      value: 'dsfyub345sad2f32432',
     },
   ];
 
@@ -120,48 +102,42 @@ export class ProductDetailComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.formBuilder();
-    this.productImageBuilder();
-    // console.log('🚀 ~ ProductDetailComponent ~ ngOnInit ~ this.variants:', this.variants);
+    this.initForm();
+    this.initProductImages();
   }
 
-  ngAfterViewInit(): void {}
-
   onSubmit() {
-    // if (!this.productForm.valid || this.isAnyOptionSetup()) {
-    //   this.markFormGroupTouched(this.productForm);
-    //   return;
-    // }
+    if (!this.productForm.valid || this.isAnyOptionSetup()) {
+      this.markFormGroupTouched(this.productForm);
+      return;
+    }
 
-    let galleryImage: any = [];
+    const productUpsert = this.prepareProductData();
+    console.log("🚀 ~ ProductDetailComponent ~ onSubmit ~ productUpsert:", productUpsert)
+  }
 
-    this.productGalleryImages.forEach((item: any) => {
-      if (item.value) galleryImage.push(item.value);
-    });
-    const uId = uuid();
+  // Prepare product data for submission
+  private prepareProductData() {
+    const formValue = this.productForm.getRawValue();
+    const galleryImages = this.productGalleryImages
+      .filter((item: any) => item.value)
+      .map((item: any) => item.value);
 
-    const productUpsert = {
-      id: uId,
-      name: this.productForm.get('productName')?.value,
-      mainImage: this.productMainImage,
-      galleryImage: galleryImage,
-      cate: this.productForm.get('productCate')?.value,
-      desc: this.productForm.get('productDesc')?.value,
-      variants: this.productForm.get('productVariants')?.value,
+    return {
+      name: formValue.productName,
+      mainImage: this.productMainImage.value,
+      galleryImage: galleryImages,
+      cate: formValue.productCate,
+      desc: formValue.productDesc,
+      variants: formValue.productVariants,
     };
-    console.log('🚀 ~ ProductDetailComponent ~ onSubmit ~ productUpsert:', productUpsert);
-    this.productForm.getRawValue();
-    console.log(
-      '🚀 ~ ProductDetailComponent ~ onSubmit ~ this.productForm.getRawValue();:',
-      this.productForm.getRawValue(),
-    );
-    this.uploadImageToFBStorage(productUpsert);
   }
 
   private uploadImageToFBStorage(productUpsert: any) {
     this.productService.uploadImageToFBStorage(productUpsert.id, productUpsert.mainImage);
   }
 
+  // Handle file change for gallery images
   onFileChange(event: any, currentImageIndex: number) {
     const files: FileList = event.target.files;
     if (!files || files.length === 0) return;
@@ -182,29 +158,29 @@ export class ProductDetailComponent implements OnInit {
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    if (!file || !this.isValidImageFile(file)) return;
+    if (file && this.isValidImageFile(file)) {
+      this.readAndSetMainImage(file);
+    }
+  }
 
+  private readAndSetMainImage(file: File): void {
     const reader = new FileReader();
     reader.onload = (event: any) => {
-      this.productMainImage = this.productMainImage;
       this.productMainImage.value = event.target.result;
       this.productMainImage.disable = true;
-      // Enable next image slot if available
-      const nextImage = this.productGalleryImages.find((item: any) => item.value == null);
-      nextImage.disable = false;
+      this.enableNextImageSlot(-1);
     };
     reader.readAsDataURL(file);
   }
 
-  isAnyOptionSetup() {
-    const optionsForm = this.productForm.controls['options'] as FormArray;
-    let isAnyOptionSetup = false;
-    Object.values(optionsForm.controls).forEach((optionF: any) => {
-      if (optionF && optionF.controls['isOptionSetup']?.value) {
-        isAnyOptionSetup = true;
-      }
-    });
-    return isAnyOptionSetup;
+  // Enable next image slot if available
+  private enableNextImageSlot(currentIndex: number): void {
+    const nextImage = this.productGalleryImages.find((item: any, index: number) =>
+      index > currentIndex && item.value == null
+    );
+    if (nextImage) {
+      nextImage.disable = false;
+    }
   }
 
   private isValidImageFile(file: File): boolean {
@@ -239,30 +215,23 @@ export class ProductDetailComponent implements OnInit {
     // Update the disabled state of all images
     this.updateImageStates();
     this.productForm.patchValue({ productImage: '' });
-    console.log(
-      '🚀 ~ ProductDetailComponent ~ removeFileImage ~ this.productGalleryImages:',
-      this.productGalleryImages,
-    );
   }
 
+  // Remove main image
   removeMainImageFileImage(): void {
-    // Clear the  image
     this.productMainImage.value = null;
     this.productMainImage.disable = false;
-
-    const nextImage = this.productGalleryImages.find((item: any) => item.disable == false);
-    if (!nextImage.value) {
-      nextImage.disable = true;
-    }
-
+    this.updateImageStates();
     this.productForm.patchValue({ productMainImage: '' });
   }
 
+  // Clear image at specific index
   private clearImage(index: number): void {
     this.productGalleryImages[index].value = null;
     this.productGalleryImages[index].disable = false;
   }
 
+  // Shift images up to fill the gap
   private shiftImagesUp(startIndex: number): void {
     for (let i = startIndex; i < this.productGalleryImages.length - 1; i++) {
       if (this.productGalleryImages[i].value === null && this.productGalleryImages[i + 1].value !== null) {
@@ -273,32 +242,31 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
+  // Update image states after removal
   private updateImageStates(): void {
     let firstEmptySlotFound = false;
-
-    for (let i = 0; i < this.productGalleryImages.length; i++) {
-      if (this.productGalleryImages[i].value === null && !firstEmptySlotFound) {
-        this.productGalleryImages[i].disable = false;
+    this.productGalleryImages.forEach((image: any) => {
+      if (!image.value && !firstEmptySlotFound) {
+        image.disable = false;
         firstEmptySlotFound = true;
       } else {
-        this.productGalleryImages[i].disable = true;
+        image.disable = true;
       }
-    }
+    });
   }
 
+  // Mark all controls in a form group as touched
   private markFormGroupTouched(formGroup: FormGroup) {
     Object.values(formGroup.controls).forEach((control: any) => {
-      if (control.controls) {
-        this.markFormGroupTouched(control);
-      }
       control.markAsTouched();
-      if (control instanceof FormGroup) {
+      if (control.controls) {
         this.markFormGroupTouched(control);
       }
     });
   }
 
-  formBuilder() {
+  // Initialize the main form
+  private initForm() {
     this.productForm = this.fb.group({
       productName: ['', [Validators.required, Validators.minLength(25)]],
       productMainImage: ['', Validators.required],
@@ -316,83 +284,53 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
-  productImageBuilder() {
-    this.productMainImage = {
-      name: 'Tải lên ảnh chỉnh',
-      attrs: ['Kích thước: 300x300 px', 'Kích thước tập tin tối đa: 5MB', 'Format: JPG, JPEG, PNG'],
-      formControlName: 'mainImage',
-      value: null,
-      icon: 'assets/icons/heroicons/outline/media-image.svg',
-      disable: false,
-    };
+  // Initialize product images
+  private initProductImages() {
+    this.productMainImage = this.createImageData(
+      'Tải lên ảnh chỉnh',
+      'assets/icons/heroicons/outline/media-image.svg',
+      false,
+      ['Kích thước: 300x300 px', 'Kích thước tập tin tối đa: 5MB', 'Format: JPG, JPEG, PNG']
+    )
 
     this.productGalleryImages = [
-      {
-        name: 'Chính Diện',
-        value: null,
-        icon: './assets/images/front.png',
-        disable: true,
-      },
-      {
-        name: 'Cạnh Bên',
-        value: null,
-        icon: './assets/images/side.png',
-        disable: true,
-      },
-      {
-        name: 'Góc Độ Khác',
-        value: null,
-        icon: './assets/images/another-angle.png',
-        disable: true,
-      },
-      {
-        name: 'Đang sử dụng',
-        value: null,
-        icon: './assets/images/using.png',
-        disable: true,
-      },
-      {
-        name: 'Biến Thể',
-        value: null,
-        icon: './assets/images/variant.png',
-        disable: true,
-      },
-      {
-        name: 'Cảnh nền',
-        value: null,
-        icon: './assets/images/background-perspective.png',
-        disable: true,
-      },
-      {
-        name: 'Chụp cận',
-        value: null,
-        icon: './assets/images/close-up-photo.png',
-        disable: true,
-      },
-      {
-        name: 'Kích Thước',
-        value: null,
-        icon: './assets/images/size-box.png',
-        disable: true,
-      },
+      this.createImageData('Chính Diện', './assets/images/front.png', true),
+      this.createImageData('Cạnh Bên', './assets/images/side.png', true),
+      this.createImageData('Góc Độ Khác', './assets/images/another-angle.png', true),
+      this.createImageData('Đang sử dụng', './assets/images/using.png', true),
+      this.createImageData('Biến Thể', './assets/images/variant.png', true),
+      this.createImageData('Cảnh nền', './assets/images/background-perspective.png', true),
+      this.createImageData('Chụp cận', './assets/images/close-up-photo.png', true),
+      this.createImageData('Kích Thước', './assets/images/size-box.png', true)
     ];
   }
 
+  private createImageData(name: string, icon: string, disable: boolean, attrs?: Array<String>) {
+    return { name, value: null, icon, disable: disable, attrs };
+  }
+
+  // Handle drag and drop for gallery images
   drop(event: CdkDragDrop<object[]>) {
     moveItemInArray(this.productGalleryImages, event.previousIndex, event.currentIndex);
   }
 
-  turnOnOffOptions() {
-    if (!this.isOptions) {
+  // Toggle options on/off
+  toggleOptions() {
+    if (this.isOptions) {
+      this.addOption();
+    } else {
       this.turnOffOptions();
-      return;
     }
-    this.addOption();
   }
 
+  // Turn off options
   turnOffOptions() {
-    for (let idx in this.loadedOptions) {
+    const optionsForm = this.productForm.get('options') as FormGroup;
+    if (optionsForm) {
       this.productForm.removeControl('options');
+    }
+
+    for (let idx in this.loadedOptions) {
       this.loadedOptions[idx].destroy();
     }
     this.loadedOptions = {};
@@ -400,6 +338,7 @@ export class ProductDetailComponent implements OnInit {
     return;
   }
 
+  // Add a new option
   addOption() {
     let optionsForm = this.productForm.controls['options'] as FormGroup;
 
@@ -557,6 +496,7 @@ export class ProductDetailComponent implements OnInit {
     return formGroup;
   }
 
+  // Create variants form
   private createVariantsForm() {
     let sets = [[]];
 
@@ -589,7 +529,12 @@ export class ProductDetailComponent implements OnInit {
       variantsForm.push(variantForm);
     });
     return variantsForm;
-    // return sets.map((set) => ({}));
+  }
+
+  // Check if any option is set up
+  private isAnyOptionSetup(): boolean {
+    const optionsForm = this.productForm.get('options') as FormGroup;
+    return optionsForm ? Object.values(optionsForm.controls).some((control: any) => control.value.isOptionSetup) : false;
   }
 
   getOption(id: any) {
