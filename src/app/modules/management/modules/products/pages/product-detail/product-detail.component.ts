@@ -1,12 +1,14 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Component, ComponentFactoryResolver, OnInit, ViewChild, ViewContainerRef, } from '@angular/core';
+import { Component, ComponentFactoryResolver, Input, OnInit, ViewChild, ViewContainerRef, } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { UtilsService } from 'src/app/base/utils.sevice';
 import { OptionsProductForm } from 'src/app/modules/management/model/options-product-form';
 import { AddVaritantProductFormComponent } from '../../component/add-varitant-product-form/add-varitant-product-form.component';
 import { v4 as uuid } from 'uuid';
-import { ProductService } from '../../../service/product.service';
+import { ProductsService } from '../../../service/products.service';
+import { Product2Create } from 'src/app/modules/management/model/product.model';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-product-detail',
@@ -14,8 +16,87 @@ import { ProductService } from '../../../service/product.service';
   styleUrls: ['./product-detail.component.scss'],
 })
 export class ProductDetailComponent implements OnInit {
+  @Input() product: Product2Create = {
+    name: "Aó khoác hoodie màu đen siêu phẩm",
+    cate: "asdf25asdf43436xsza",
+    desc: "<font face=\"Arial\">A&#243; kho&#225;c hoodie m&#224;u &#273;en si&#234;u ph&#7849;m</font>",
+    mainImage: "https://storage.googleapis.com/productshowing-708f8.appspot.com/products/1000000016/mainImage/0.jpg?GoogleAccessId=firebase-adminsdk-fe0qg%40productshowing-708f8.iam.gserviceaccount.com&Expires=16446992400&Signature=R8y3O%2FVjUv%2FU1p7ko7o3UnOhNlWO3J7Bd1KnGVWuF7mn%2BZujhm3kgI8Qx%2BqK2YAsBx1C4ntNlPMoUGH1oPtmNLT9nYxFOExZ56Gmij%2BaL6JqBt%2FszIROiQFb4Oyj5a%2BdKWyAp7DIx7hkquwEufjJz7IvSY%2FWUc4%2F9Lw7LwOGLuGCs8OXNZL6Ydab7fFmJbfZzJ%2FGRQjOhCSRRGHMfve49Jthr%2F4N%2BKkiW9AwoekDAMx6BcXBZdekPfGfZH7eoUomcbsFUFbh5fRFTiVsOUceFfHX5COXJEMW2riNwqNb62spL%2Fuq804DsMUaLlkHOuqTjjFghwPJI90HbgteommhFQ%3D%3D",
+    galleryImage: [
+      "https://storage.googleapis.com/productshowing-708f8.appspot.com/products/1000000016/galleryImage/0.jpg?GoogleAccessId=firebase-adminsdk-fe0qg%40productshowing-708f8.iam.gserviceaccount.com&Expires=16446992400&Signature=Zs9TabS56X%2F1UYH9lb6q%2FUrn3QWdyKI17Rzq%2BIWXRurC3s6AuQYtkX24t2B1CMsvSp2E3eusA%2FWdWiy8lY2H6DbFhGc6mB51W3sGncBz9D2tM1m0cwU7BewqoExfOwTuU%2F2y1GinY1PJn6tNFpOYGcFK6e%2Fq2hu9qqy%2FV2CpUelomKrWxOH3%2BGJyRG6Xo3w6KX4Ti5PeydFArCKx8OqlLVYKIp2RkThpi%2FO7IMOLwry3btnDnPCV8tWVSBM94bFSnhZ3m%2Fl450mbSrvMF%2FvHeNPhEKnz2SgD1s0lVv9VULrmf4xk6I2Da8UcXo6%2FfsdKCIxEy5ZwFBLg%2Bl4ho1bvuA%3D%3D",
+      "https://storage.googleapis.com/productshowing-708f8.appspot.com/products/1000000016/mainImage/0.jpg?GoogleAccessId=firebase-adminsdk-fe0qg%40productshowing-708f8.iam.gserviceaccount.com&Expires=16446992400&Signature=R8y3O%2FVjUv%2FU1p7ko7o3UnOhNlWO3J7Bd1KnGVWuF7mn%2BZujhm3kgI8Qx%2BqK2YAsBx1C4ntNlPMoUGH1oPtmNLT9nYxFOExZ56Gmij%2BaL6JqBt%2FszIROiQFb4Oyj5a%2BdKWyAp7DIx7hkquwEufjJz7IvSY%2FWUc4%2F9Lw7LwOGLuGCs8OXNZL6Ydab7fFmJbfZzJ%2FGRQjOhCSRRGHMfve49Jthr%2F4N%2BKkiW9AwoekDAMx6BcXBZdekPfGfZH7eoUomcbsFUFbh5fRFTiVsOUceFfHX5COXJEMW2riNwqNb62spL%2Fuq804DsMUaLlkHOuqTjjFghwPJI90HbgteommhFQ%3D%3D"
+    ],
+    variants: [
+      {
+        upc: "11843021",
+        price: "10",
+        qty: 10,
+        option_values: [
+          {
+            image: "https://storage.googleapis.com/productshowing-708f8.appspot.com/products/1000000016/variants/11843021/0.jpg?GoogleAccessId=firebase-adminsdk-fe0qg%40productshowing-708f8.iam.gserviceaccount.com&Expires=16446992400&Signature=j8EY4MG2UWtSOdyEU%2F3SvOYPwKPHtepFgdkc6U8YtbP0U%2FJa93XSqQQMGncuscS9Smd5bgaSzHJwb6vR6ggJ9PkOhsosr5wTnzhjj6EuSDKjA6kDFwzu%2BGHQaDixJD%2Fi7YvTiZjDrscdKES%2FBAUg02HGLHqNM82h%2F3YS%2BHS5IJG50qjLqWwW0IIFh2CCZj6fsmXz0UIrFigRo%2FbpM831Y4ncD0%2BVrrriWNnfZ8PpJejVfeCaEbfJ%2FiI%2Fw22%2BQUG%2FG6vh0q%2FnTb%2BS6EjzGwgNkDbePQXg8Izm0P2LsUSx6P9KmlhV%2F3NcMW%2B4nx5yOpoi5C89wZn3iLym9Qbn9BB7Vg%3D%3D",
+            name: "Đen",
+            option_id: "5e70047aa2f3c2574a27e4a2"
+          },
+          {
+            name: "M",
+            option_id: "5e70047aa2f3c2574a27e4a3"
+          }
+        ]
+      },
+      {
+        "upc": "11843022",
+        "price": "10",
+        "qty": 10,
+        "option_values": [
+          {
+            image: "https://storage.googleapis.com/productshowing-708f8.appspot.com/products/1000000016/variants/18400374/0.jpg?GoogleAccessId=firebase-adminsdk-fe0qg%40productshowing-708f8.iam.gserviceaccount.com&Expires=16446992400&Signature=E95X4Dw4wp6aHVBrpCl2%2BqeOIx2U7ebMgeh8OA8qEGDpichahcY6mFvl8iXAGiUs8rwYwyM84aO1I3wsOtZ1iUBmfED2lKoKzcIQuHRx4YOlqAdcznIg%2FCrt2LVwKrEaXvyBaMGxFbGohY9YXKnXS5atQwkBTYZyeH%2FXW2JDVY3gU50Gp8oyvc2UQ4kuK3UWdKObAva8Nm59E9njqSvsGxck%2BM09IgiwEZxNIDliuCNy01LYHxerKbJ32L0wf18CbC3U5RBRKyp3Yuo1tZi4SwSVEpwNR3r20ch9ZoKjNY71TDXKO7I4HkIj67guxtQpjwBF2WPj2KUmvWuECdd1cQ%3D%3D",
+            name: "Xam",
+            "option_id": "5e70047aa2f3c2574a27e4a2"
+          },
+          {
+            name: "M",
+            "option_id": "5e70047aa2f3c2574a27e4a3"
+          }
+        ]
+      },
+      {
+        "upc": "11843023",
+        "price": "10",
+        "qty": 10,
+        "option_values": [
+          {
+            image: "https://storage.googleapis.com/productshowing-708f8.appspot.com/products/1000000016/variants/11843021/0.jpg?GoogleAccessId=firebase-adminsdk-fe0qg%40productshowing-708f8.iam.gserviceaccount.com&Expires=16446992400&Signature=j8EY4MG2UWtSOdyEU%2F3SvOYPwKPHtepFgdkc6U8YtbP0U%2FJa93XSqQQMGncuscS9Smd5bgaSzHJwb6vR6ggJ9PkOhsosr5wTnzhjj6EuSDKjA6kDFwzu%2BGHQaDixJD%2Fi7YvTiZjDrscdKES%2FBAUg02HGLHqNM82h%2F3YS%2BHS5IJG50qjLqWwW0IIFh2CCZj6fsmXz0UIrFigRo%2FbpM831Y4ncD0%2BVrrriWNnfZ8PpJejVfeCaEbfJ%2FiI%2Fw22%2BQUG%2FG6vh0q%2FnTb%2BS6EjzGwgNkDbePQXg8Izm0P2LsUSx6P9KmlhV%2F3NcMW%2B4nx5yOpoi5C89wZn3iLym9Qbn9BB7Vg%3D%3D",
+            name: "Đen",
+            option_id: "5e70047aa2f3c2574a27e4a2"
+          },
+          {
+            name: "L",
+            option_id: "5e70047aa2f3c2574a27e4a3"
+          }
+        ]
+      },
+      {
+        "upc": "11843024",
+        "price": "10",
+        "qty": 10,
+        "option_values": [
+          {
+            image: "https://storage.googleapis.com/productshowing-708f8.appspot.com/products/1000000016/variants/18400374/0.jpg?GoogleAccessId=firebase-adminsdk-fe0qg%40productshowing-708f8.iam.gserviceaccount.com&Expires=16446992400&Signature=E95X4Dw4wp6aHVBrpCl2%2BqeOIx2U7ebMgeh8OA8qEGDpichahcY6mFvl8iXAGiUs8rwYwyM84aO1I3wsOtZ1iUBmfED2lKoKzcIQuHRx4YOlqAdcznIg%2FCrt2LVwKrEaXvyBaMGxFbGohY9YXKnXS5atQwkBTYZyeH%2FXW2JDVY3gU50Gp8oyvc2UQ4kuK3UWdKObAva8Nm59E9njqSvsGxck%2BM09IgiwEZxNIDliuCNy01LYHxerKbJ32L0wf18CbC3U5RBRKyp3Yuo1tZi4SwSVEpwNR3r20ch9ZoKjNY71TDXKO7I4HkIj67guxtQpjwBF2WPj2KUmvWuECdd1cQ%3D%3D",
+            name: "Xam",
+            option_id: "5e70047aa2f3c2574a27e4a2"
+          },
+          {
+            name: "L",
+            option_id: "5e70047aa2f3c2574a27e4a3"
+          }
+        ]
+      }
+    ]
+  }
+
   @ViewChild('optionsContainer', { read: ViewContainerRef, static: true })
+
   optionsContainer!: ViewContainerRef;
+
 
   loadedOptions: any = {};
 
@@ -96,7 +177,7 @@ export class ProductDetailComponent implements OnInit {
     private fb: FormBuilder,
     public utilsService: UtilsService,
     private componentFactoryResolver: ComponentFactoryResolver,
-    private productService: ProductService,
+    private productsService: ProductsService,
   ) {
     this.productForm = new FormGroup({});
   }
@@ -119,6 +200,8 @@ export class ProductDetailComponent implements OnInit {
   // Prepare product data for submission
   private prepareProductData() {
     const formValue = this.productForm.getRawValue();
+    console.log("🚀 ~ ProductDetailComponent ~ prepareProductData ~ this.productForm:", this.productForm)
+    console.log("🚀 ~ ProductDetailComponent ~ prepareProductData ~ formValue:", formValue)
     const galleryImages = this.productGalleryImages
       .filter((item: any) => item.value)
       .map((item: any) => item.value);
@@ -129,12 +212,13 @@ export class ProductDetailComponent implements OnInit {
       galleryImage: galleryImages,
       cate: formValue.productCate,
       desc: formValue.productDesc,
-      variants: formValue.productVariants,
+      //don't know why can not get value option_value of productVariants on formValue;
+      variants: this.getFormGroup(this.productForm, 'productVariants').value,
     };
   }
 
-  private uploadImageToFBStorage(productUpsert: any) {
-    this.productService.uploadImageToFBStorage(productUpsert.id, productUpsert.mainImage);
+  private createProduct(productUpsert: any) {
+    this.productsService.createProduct(productUpsert)
   }
 
   // Handle file change for gallery images
@@ -197,10 +281,7 @@ export class ProductDetailComponent implements OnInit {
       currentImage.disable = true;
 
       // Enable next image slot if available
-      if (index + 1 < this.productGalleryImages.length) {
-        const nextImage = this.productGalleryImages[index + 1];
-        nextImage.disable = false;
-      }
+      this.enableNextImageSlot(index);
     };
     reader.readAsDataURL(file);
   }
@@ -266,14 +347,16 @@ export class ProductDetailComponent implements OnInit {
   }
 
   // Initialize the main form
-  private initForm() {
+  private async initForm() {
     this.productForm = this.fb.group({
-      productName: ['', [Validators.required, Validators.minLength(25)]],
-      productMainImage: ['', Validators.required],
-      productCate: ['', Validators.required],
-      productDesc: ['', Validators.required],
-      productVariants: this.createVariantsForm(),
+      productName: [this.product.name, [Validators.required, Validators.minLength(25)]],
+      productMainImage: [this.product.mainImage, Validators.required],
+      productCate: [this.product.cate, Validators.required],
+      productDesc: [this.product.desc, Validators.required],
+      productVariants: this.fb.array([]),
     });
+    this.productForm.controls['productVariants'] = await this.createVariantsForm();
+    this.initOptions();
   }
 
   variantFormBuilder() {
@@ -288,25 +371,27 @@ export class ProductDetailComponent implements OnInit {
   private initProductImages() {
     this.productMainImage = this.createImageData(
       'Tải lên ảnh chỉnh',
+      this.product.mainImage,
       'assets/icons/heroicons/outline/media-image.svg',
       false,
       ['Kích thước: 300x300 px', 'Kích thước tập tin tối đa: 5MB', 'Format: JPG, JPEG, PNG']
     )
 
     this.productGalleryImages = [
-      this.createImageData('Chính Diện', './assets/images/front.png', true),
-      this.createImageData('Cạnh Bên', './assets/images/side.png', true),
-      this.createImageData('Góc Độ Khác', './assets/images/another-angle.png', true),
-      this.createImageData('Đang sử dụng', './assets/images/using.png', true),
-      this.createImageData('Biến Thể', './assets/images/variant.png', true),
-      this.createImageData('Cảnh nền', './assets/images/background-perspective.png', true),
-      this.createImageData('Chụp cận', './assets/images/close-up-photo.png', true),
-      this.createImageData('Kích Thước', './assets/images/size-box.png', true)
+      this.createImageData('Chính Diện', this.product.galleryImage[0], './assets/images/front.png', true),
+      this.createImageData('Cạnh Bên', this.product.galleryImage[1], './assets/images/side.png', true),
+      this.createImageData('Góc Độ Khác', this.product.galleryImage[2], './assets/images/another-angle.png', true),
+      this.createImageData('Đang sử dụng', this.product.galleryImage[3], './assets/images/using.png', true),
+      this.createImageData('Biến Thể', this.product.galleryImage[4], './assets/images/variant.png', true),
+      this.createImageData('Cảnh nền', this.product.galleryImage[5], './assets/images/background-perspective.png', true),
+      this.createImageData('Chụp cận', this.product.galleryImage[6], './assets/images/close-up-photo.png', true),
+      this.createImageData('Kích Thước', this.product.galleryImage[7], './assets/images/size-box.png', true)
     ];
+    this.enableNextImageSlot(this.product.galleryImage.length - 1);
   }
 
-  private createImageData(name: string, icon: string, disable: boolean, attrs?: Array<String>) {
-    return { name, value: null, icon, disable: disable, attrs };
+  private createImageData(name: string, value: string, icon: string, disable: boolean, attrs?: Array<String>) {
+    return { name, value: value, icon, disable: disable, attrs };
   }
 
   // Handle drag and drop for gallery images
@@ -317,7 +402,7 @@ export class ProductDetailComponent implements OnInit {
   // Toggle options on/off
   toggleOptions() {
     if (this.isOptions) {
-      this.addOption();
+      this.initOptions();
     } else {
       this.turnOffOptions();
     }
@@ -338,31 +423,105 @@ export class ProductDetailComponent implements OnInit {
     return;
   }
 
-  // Add a new option
-  addOption() {
+  async initOptions() {
+    if (this.product.variants && this.product.variants.length < 0) {
+      return;
+    }
+
+    this.isOptions = true;
+
+    this.productForm.addControl('options', this.fb.group({}));
     let optionsForm = this.productForm.controls['options'] as FormGroup;
+
+    let options: any = [];
+
+    //convert product variant to option
+    this.product.variants.forEach((pv: any) => {
+      pv.option_values.forEach((ov: any) => {
+        let option = options.find((co: any) => co.option_id == ov.option_id);
+        if (!option) {
+          option = {
+            isOptionSetup: false,
+            option_id: ov.option_id,
+            option_values: []
+          }
+        }
+        if (option.option_id == ov.option_id) {
+          let optionValueExist = option.option_values.find((s: any) => s.option_id == ov.option_id && s.name == ov.name)
+          if (!optionValueExist) {
+            option.option_values.push(ov);
+          }
+        }
+        let optionExist = options.find((co: any) => co.option_id == option.option_id);
+
+        if (!optionExist) {
+          options.push(option);
+        }
+      })
+    });
+    console.log("🚀 ~ ProductDetailComponent ~ pv.option_values.forEach ~ options:", options)
+
+    //crate option form
+    await options.forEach(async (o: any) => {
+      const uId = uuid();
+      optionsForm.addControl('option-' + uId, this.fb.group({
+        option_id: [o.option_id, Validators.required],
+        option_values: this.fb.array([]),
+        isOptionSetup: false,
+      }));
+
+      await o.option_values.forEach((ov: any) => {
+        const variantsForm = this.fb.group({
+          ['name']: new FormControl(ov.name, [Validators.required]),
+        }) as FormGroup;
+
+        if (ov.image) {
+          variantsForm.addControl('image', new FormControl(ov.image, [Validators.required]));
+        }
+        const optionForm = optionsForm.controls['option-' + uId] as FormGroup;
+        const option_values = optionForm.controls['option_values'] as FormArray;
+        option_values.push(variantsForm);
+      });
+
+      this.addOption(optionsForm, uId);
+    });
+
+    Object.assign(this.confirmedOptions, options);
+    console.log("🚀 ~ ProductDetailComponent ~ initOptions ~ this.confirmedOptions:", this.confirmedOptions)
+    this.productForm.removeControl('productVariants');
+    this.productForm.addControl('productVariants', this.fb.array([]));
+    this.productForm.controls['productVariants'] = await this.initVariantsForm();
+    console.log("🚀 ~ ProductDetailComponent ~ initOptions ~ this.productForm:", this.productForm)
+  }
+
+  // Add a new option
+  addOption(optionsForm?: FormGroup, uId?: string) {
+
+    //create new uId
+    if (!uId) {
+      uId = uuid();
+    }
+
+    //create new optionsForm
+    if (!optionsForm) {
+      this.productForm.addControl('options', this.fb.group({}));
+      optionsForm = this.productForm.controls['options'] as FormGroup;
+      optionsForm.setValidators(this.customOptionsValidator);
+
+      optionsForm.addControl(
+        'option-' + uId,
+        this.fb.group({
+          option_id: ['', Validators.required],
+          option_values: this.fb.array([]),
+          isOptionSetup: true,
+        }),
+      );
+    }
 
     let componentFactory = this.componentFactoryResolver.resolveComponentFactory(AddVaritantProductFormComponent);
     let componentRef = this.optionsContainer.createComponent(componentFactory);
 
     let ref: any = componentRef.instance;
-
-    const uId = uuid();
-
-    if (!optionsForm) {
-      this.productForm.addControl('options', this.fb.group({}));
-      optionsForm = this.productForm.controls['options'] as FormGroup;
-      optionsForm.setValidators(this.customOptionsValidator);
-    }
-
-    optionsForm.addControl(
-      'option-' + uId,
-      this.fb.group({
-        option_id: ['', Validators.required],
-        option_values: this.fb.array([]),
-        isOptionSetup: true,
-      }),
-    );
 
     const formOptionsGroup = optionsForm.controls['option-' + uId];
 
@@ -440,7 +599,7 @@ export class ProductDetailComponent implements OnInit {
 
   evnetEmitOptions(ref: any) {
     // Subscribing to the EventEmitter from the option
-    ref.emitOptionsAndVariants.subscribe((uId: any) => {
+    ref.emitOptionsAndVariants.subscribe(async (uId: any) => {
       let optionsForm = this.productForm.controls['options'] as FormGroup;
       const formOptionsGroup = optionsForm.controls['option-' + uId];
       const option = formOptionsGroup.getRawValue();
@@ -448,29 +607,38 @@ export class ProductDetailComponent implements OnInit {
       //check isValidNewAddOptions
       this.checkIsValidNewAddOptions(option);
 
-      const existConfirmedOptions = this.confirmedOptions.find((c: any) => c.option_id == option.option_id);
+      const existConfirmedOptions = await this.confirmedOptions.find((c: any) => c.option_id == option.option_id);
       if (existConfirmedOptions) {
         existConfirmedOptions.option_values = option.option_values;
       } else {
         this.confirmedOptions.push(option);
       }
       this.productForm.removeControl('productVariants');
-      this.productForm.addControl('productVariants', this.createVariantsForm());
-      console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm: 1111111111', this.productForm);
+      this.productForm.addControl('productVariants', this.fb.array([]));
+      this.productForm.controls['productVariants'] = await this.createVariantsForm();
+      if(!this.checkIsOptionsSetup()){
+        this.onChangeVariants();
+      }
     });
+    console.log("🚀 ~ ProductDetailComponent ~ ref.emitOptionsAndVariants.subscribe ~  this.productForm:", this.productForm)
   }
 
   evnetEmitOpenSetupOption(ref: any) {
-    ref.emitOpenSetupOptionsAndVariants.subscribe((uId: any) => {
+    ref.emitOpenSetupOptionsAndVariants.subscribe(async (uId: any) => {
       let optionsForm = this.productForm.controls['options'] as FormGroup;
-      const formOptionsGroup = optionsForm.controls['option-' + uId];
+      const formOptionsGroup = optionsForm.controls['option-' + uId] as FormGroup;
+
+      formOptionsGroup.patchValue({ isOptionSetup: true });
+
       const option = formOptionsGroup.getRawValue();
 
-      const idxConfirmedOptions = this.confirmedOptions.findIndex((c: any) => c.option_id == option.option_id);
+      const idxConfirmedOptions = await this.confirmedOptions.findIndex((c: any) => c.option_id == option.option_id);
+      console.log("🚀 ~ ProductDetailComponent ~ ref.emitOpenSetupOptionsAndVariants.subscribe ~ this.confirmedOptions:", this.confirmedOptions)
       this.confirmedOptions[idxConfirmedOptions].option_values = [];
       // this.confirmedOptions.push(option);
       this.productForm.removeControl('productVariants');
-      this.productForm.addControl('productVariants', this.createVariantsForm());
+      this.productForm.addControl('productVariants', this.fb.array([]));
+      this.productForm.controls['productVariants'] = await this.createVariantsForm();
     });
   }
 
@@ -490,6 +658,17 @@ export class ProductDetailComponent implements OnInit {
     return confirmedOptionsValid ? true : false;
   }
 
+  checkIsOptionsSetup() {
+    const optionsFormValue = this.getFormGroup(this.productForm, "options").value;
+    let isOptionsSetup = false;
+    Object.values(optionsFormValue).forEach((option: any) => {
+      if (option.isOptionSetup) {
+        isOptionsSetup = true;
+      }
+    })
+    return isOptionsSetup;
+  }
+
   getFormGroup(formControl: FormGroup, controlName: string) {
     const formGroup = formControl.controls[controlName] as any;
     if (formGroup && !formGroup) return '';
@@ -497,7 +676,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   // Create variants form
-  private createVariantsForm() {
+  private async createVariantsForm() {
     let sets = [[]];
 
     this.confirmedOptions.forEach((option: any) => {
@@ -513,20 +692,63 @@ export class ProductDetailComponent implements OnInit {
 
     let variantsForm = this.fb.array([]) as FormArray;
 
-    sets.forEach((set: any) => {
-      const variantForm = this.fb.group({
-        ['price']: new FormControl('', [Validators.required]),
-        ['qty']: new FormControl('', [Validators.required]),
-        ['upc']: new FormControl(''),
-        ['option_values']: new Array(),
-      });
-      const option_values: any = variantForm.controls['option_values'];
-      option_values.value = [];
-      set.forEach((s: any) => {
-        option_values.value.push(s);
+    await sets.forEach(async (set: any) => {
+      console.log("🚀 ~ ProductDetailComponent ~ awaitsets.forEach ~ set:", set)
+      let variantExist: any = {};
+
+      this.product.variants.forEach(async (variant: any) => {
+        console.log("🚀 ~ ProductDetailComponent ~ this.product.variants.forEach ~ variant:", variant.option_values)
+        var result = this.isArrayEqual(
+          set,
+          variant.option_values
+        );
+        if (result) {
+          variantExist = variant
+        }
+        console.log("🚀 ~ ProductDetailComponent ~ awaitsets.forEach ~ result:", result)
       });
 
+
+
+      let variantForm = this.fb.group({
+        ['price']: new FormControl(variantExist.price, [Validators.required]),
+        ['qty']: new FormControl(variantExist.qty, [Validators.required]),
+        ['upc']: new FormControl(variantExist.upc)
+      }) as FormGroup;
+      if (set && set.length > 0) {
+        variantForm.addControl('option_values', this.fb.array([]));
+        await set.forEach((s: any) => {
+          variantForm.controls['option_values'].value.push(s);
+        });
+        variantsForm.push(variantForm);
+      }
+    });
+    return variantsForm;
+  }
+
+  isArrayEqual(x: any, y: any) {
+    return _(x).xorWith(y, _.isEqual).isEmpty();
+  };
+
+  // Create variants form
+  private initVariantsForm() {
+    let variantsForm = this.fb.array([]) as FormArray;
+    this.product.variants.forEach(async (variant: any) => {
+      let variantForm = this.fb.group({
+        ['price']: new FormControl(variant.price, [Validators.required]),
+        ['qty']: new FormControl(variant.qty, [Validators.required]),
+        ['upc']: new FormControl(variant.upc),
+        ["option_values"]: this.fb.array([])
+      }) as FormGroup;
+      if (variant.option_values && variant.option_values.length > 0) {
+        const option_values: any = variantForm.controls['option_values'];
+        option_values.value = [];
+        await variant.option_values.forEach((s: any) => {
+          option_values.value.push(s);
+        });
+      }
       variantsForm.push(variantForm);
+
     });
     return variantsForm;
   }
@@ -557,11 +779,15 @@ export class ProductDetailComponent implements OnInit {
 
   submitBatchEditing() {
     const variantsForm = this.getFormGroup(this.productForm, 'productVariants').controls;
-    console.log('🚀 ~ ProductDetailComponent ~ submitBatchEditing ~ variantsForm:', variantsForm);
     Object.values(variantsForm).forEach((variant: any) => {
       variant.patchValue({ price: this.batchEditingPrice });
       variant.patchValue({ qty: this.batchEditingQTY });
       variant.patchValue({ upc: this.batchEditingSKU });
     });
+  }
+
+  onChangeVariants() {
+    this.product.variants = this.getFormGroup(this.productForm, 'productVariants').value;
+    console.log("🚀 ~ ProductDetailComponent ~ onChangeVariants ~ this.getFormGroup(this.productForm, 'productVariants').value:", this.getFormGroup(this.productForm, 'productVariants').value)
   }
 }

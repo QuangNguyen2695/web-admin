@@ -50,9 +50,11 @@ export class AddVaritantProductFormComponent {
   }
 
   ngOnInit() {
-    this.setOptionValuesForm();
     this.option_values = this.formOptionsGroup.controls['option_values'] as FormArray;
-    this.option_values.push(this.variantsForm);
+    if (this.option_values.length < 0) {
+      this.setOptionValuesForm();
+      this.option_values.push(this.variantsForm);
+    }
     this.option_values.setValidators(this.customDuplicateValidator);
   }
 
@@ -119,7 +121,6 @@ export class AddVaritantProductFormComponent {
     this.variantsForm = this.fb.group({
       ['name']: new FormControl('', [Validators.required]),
     });
-    console.log('🚀 ~ AddVaritantProductFormComponent ~ setVariantsForm ~ this.variantsForm:', this.variantsForm);
   }
 
   onFileChange(event: any, variant: FormGroup, controlName: string) {
@@ -162,7 +163,6 @@ export class AddVaritantProductFormComponent {
   removeOptionValue(idx: any) {
     const variantFrom = <FormArray>this.option_values;
     variantFrom.removeAt(idx);
-    console.log('🚀 ~ AddVaritantProductFormComponent ~ removeVariant ~ variantFrom:', variantFrom);
   }
 
   setIsImage() {
@@ -174,7 +174,6 @@ export class AddVaritantProductFormComponent {
       } else {
         temp.addControl('image', new FormControl('', [Validators.required]));
       }
-      console.log('🚀 ~ AddVaritantProductFormComponent ~ Object.keys ~ v:', variantFrom.controls[key]);
     });
   }
 
@@ -210,12 +209,7 @@ export class AddVaritantProductFormComponent {
     }
     for (const index of duplicates) {
       formGroup.controls[index + 1].get('name')?.setErrors({ duplicated: true });
-      console.log("🚀 ~ AddVaritantProductFormComponent ~ +index:", +index)
     }
-    console.log('🚀 ~ AddVaritantProductFormComponent ~ dict:', dict);
-    console.log('🚀 ~ AddVaritantProductFormComponent ~ duplicates:', duplicates);
-    console.log('🚀 ~ AddVaritantProductFormComponent ~ formGroup:', formGroup);
-
     if (duplicates.length <= 0) {
       return null;
     } else {
