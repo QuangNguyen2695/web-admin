@@ -13,16 +13,20 @@
         <div class="absolute left-2.5 top-2.5">
           <svg-icon src="./assets/icons/heroicons/outline/magnifying-glass.svg" [svgClass]="'h-4 w-4'"> </svg-icon>
         </div>
-        <input class="py-2 pl-8 pr-2" placeholder="Search {{ title }}" type="text" (keyup.enter)="onEnter($event)" />
+        <input
+          class="w-full py-2 pl-8 pr-2 text-sm text-muted-foreground"
+          placeholder="Search {{ title }}"
+          type="text"
+          (keyup.enter)="onEnter($event)" />
       </label>
     </div>
     <div class="flex flex-wrap gap-2.5">
-      <!-- <select class="w-28 p-2 text-muted-foreground">
+      <!-- <select class="w-28 p-2 text-muted-foreground text-sm">
         <option value="1">Active</option>
         <option value="2">Disabled</option>
         <option value="2">Pending</option>
       </select> -->
-      <select class="w-28 p-2 text-muted-foreground" (change)="changeSortBy($event)">
+      <select class="w-28 p-2 text-sm text-muted-foreground" (change)="changeSortBy($event)">
         <option value="desc">Latest</option>
         <option value="asc">Oldest</option>
       </select>

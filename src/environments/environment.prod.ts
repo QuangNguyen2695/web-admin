@@ -1,7 +1,7 @@
 import { Environment } from './environment.model';
 
 export class environment extends Environment {
-  public override apiUrl: string = 'http://localhost:3360/';
+  public override apiUrl: string = 'http://localhost:8080/';
   public override production: boolean = true;
   public override firebase: any = {
     apiKey: 'AIzaSyASp7PujepIKyF80AaFfKxEDsJ_8Fazkmg',

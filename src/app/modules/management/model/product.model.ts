@@ -1,26 +1,41 @@
-export class SearchOptions {
-    product: Produt[] = [];
+export class SearchProducts {
+    products: Product[] = [];
     pageIdx: number = 0;
     totalItem: number = 0;
     totalPage: number = 0;
 }
 
-export class Produt {
+export class Product {
     id: string = "";
     name: string = "";
-    decs: string = "";
+    desc: string = "";
     cate: string = "";
     mainImage: string = "";
+    galleryImage: Array<string> = [];
+    selected: boolean = false;
 }
 
 export class Product2Create {
+    id?: string = "";
     name: string = "";
     cate: string = "";
     desc: string = "";
-    mainImage: string = "";;
+    mainImage: string = "";
     galleryImage: Array<string> = [];
+    options: Array<ProductOption> = [];
     variants: Array<ProductVariants> = [];
 }
+
+export class ProductOption {
+    option_id: string = "";
+    option_values: Array<ProductOptionValue> = [];
+    isOptionSetup: boolean = false
+}
+
+export class ProductOptionValue {
+    name: string = "";
+}
+
 
 export class ProductVariants {
     upc: string = "";

@@ -300,10 +300,12 @@
                     }@else {
                         @for(variant of getFormGroup(this.productForm, 'productVariants').controls; track variant){
                             <tr [formGroupName]="$index">
-                                @for(variantValue of getFormGroup(variant, 'option_values').value; track variantValue){
-                                    <td class="p-2 border-b border-border content-baseline">
-                                        <label>{{variantValue.name}}</label>
-                                    </td>
+                                @if(getFormGroup(variant, 'option_values')){
+                                    @for(variantValue of getFormGroup(variant, 'option_values').value; track variantValue){
+                                        <td class="p-2 border-b border-border content-baseline">
+                                            <label>{{variantValue.name}}</label>
+                                        </td>
+                                    }
                                 }
                                 
                                 <td class="p-2 border-b border-border content-baseline">

@@ -50,6 +50,7 @@
     "@types/lodash": "^4.17.7",
     "angular-svg-icon": "^13.0.0",
     "apexcharts": "^3.52.0",
+    "lodash-es": "^4.17.21",
     "ng-apexcharts": "^1.11.0",
     "ng-zorro-antd": "^18.1.1",
     "ngx-sonner": "^2.0.1",

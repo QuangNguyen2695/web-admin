@@ -51,7 +51,7 @@ export class AddVaritantProductFormComponent {
 
   ngOnInit() {
     this.option_values = this.formOptionsGroup.controls['option_values'] as FormArray;
-    if (this.option_values.length < 0) {
+    if (this.option_values.controls.length <= 0) {
       this.setOptionValuesForm();
       this.option_values.push(this.variantsForm);
     }
