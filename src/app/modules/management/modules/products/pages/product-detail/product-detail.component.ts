@@ -13,6 +13,8 @@ import { Utils } from 'src/app/shared/utils/utils';
 import { MatDialog } from '@angular/material/dialog';
 import { MaterialDialogComponent } from 'src/app/shared/components/material-dialog/material-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { OptionsService } from '../../../service/options.servive';
+import { SearchOptions } from 'src/app/modules/management/model/options.model';
 
 @Component({
   selector: 'app-product-detail',
@@ -77,18 +79,7 @@ export class ProductDetailComponent implements OnInit {
   isOptions = false;
   isValidNewAddOptions = false;
 
-  listOfOptions = [
-    {
-      display_name: 'Màu Sắc',
-      _id: '5e70047aa2f3c2574a27e4a2',
-      isSelected: false,
-    },
-    {
-      display_name: 'Size',
-      _id: '5e70047aa2f3c2574a27e4a3',
-      isSelected: false,
-    },
-  ];
+  listOfOptions: any = [];
 
   optionsProductForm: OptionsProductForm<string>[] = [];
 
@@ -107,6 +98,7 @@ export class ProductDetailComponent implements OnInit {
     public utilsService: UtilsService,
     private componentFactoryResolver: ComponentFactoryResolver,
     private productsService: ProductsService,
+    private optionsService: OptionsService,
     private utils: Utils,
     private dialog: MatDialog,
     private route: ActivatedRoute,
@@ -117,6 +109,7 @@ export class ProductDetailComponent implements OnInit {
 
   ngOnInit() {
     this.initProduct();
+    this.loadOptions();
   }
 
 
@@ -190,7 +183,6 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
-
   private createImageData(name: string, value: string, icon: string, disable: boolean, attrs?: Array<String>) {
     return { name, value: value, icon, disable: disable, attrs };
   }
@@ -203,13 +195,19 @@ export class ProductDetailComponent implements OnInit {
 
     const productUpsert = this.prepareProductData();
     console.log("🚀 ~ ProductDetailComponent ~ onSubmit ~ productUpsert:", productUpsert)
-    // this.createProduct(productUpsert);
-    return;
     if (productUpsert.id) {
       this.updateProduct(productUpsert);
     } else {
       this.createProduct(productUpsert);
     }
+  }
+
+  loadOptions() {
+    this.optionsService.searchOptions().subscribe((searchOptions: SearchOptions) => {
+      if (searchOptions && searchOptions.options && searchOptions.options.length > 0) {
+        this.listOfOptions = searchOptions.options.map((option: any) => ({ ...option, isSelected: false }));
+      }
+    })
   }
 
   // Prepare product data for submission
@@ -241,20 +239,24 @@ export class ProductDetailComponent implements OnInit {
   private createProduct(productUpsert: any) {
     this.productsService.createProduct(productUpsert).subscribe((res: any) => {
       if (res) {
-        this.showSuccesCreate()
+        this.showSucces();
+        return;
       }
+      this.showFailed();
     })
   }
 
   private updateProduct(productUpsert: any) {
     this.productsService.updateProduct(productUpsert).subscribe((res: any) => {
       if (res) {
-        this.showSuccesCreate()
+        this.showSucces();
+        return;
       }
+      this.showFailed();
     })
   }
 
-  showSuccesCreate() {
+  showSucces() {
     const dialogRef = this.dialog.open(MaterialDialogComponent, {
       data: {
         icon: {
@@ -278,6 +280,24 @@ export class ProductDetailComponent implements OnInit {
       if (result) {
         window.location.href = '/management/products';
       }
+    });
+  }
+
+  showFailed() {
+    const dialogRef = this.dialog.open(MaterialDialogComponent, {
+      data: {
+        icon: {
+          type: 'dangerous'
+        },
+        title: 'Tạo Sản Phẩm Không Thành Công',
+        content: 'Bạn vui lòng xem lại hoặc liên hệ hỗ trợ',
+        btn: [
+          {
+            label: 'OK',
+            type: 'cancel'
+          }
+        ]
+      },
     });
   }
 

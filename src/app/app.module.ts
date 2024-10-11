@@ -5,7 +5,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { CreateEditOptionDialogComponent } from './modules/management/modules/options/component/create-edit-option-dialog/create-edit-option-dialog.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-browser/animations';
@@ -15,7 +14,7 @@ import { UtilsService } from './base/utils.sevice';
 import { ENV } from '@app/env';
 
 @NgModule({
-  declarations: [CreateEditOptionDialogComponent],
+  declarations: [],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,

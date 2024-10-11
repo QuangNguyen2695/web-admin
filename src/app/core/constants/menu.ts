@@ -38,6 +38,11 @@ export class Menu {
         },
         {
           icon: 'assets/icons/heroicons/outline/cube.svg',
+          label: 'Categories',
+          route: '/management/categories'
+        },
+        {
+          icon: 'assets/icons/heroicons/outline/cube.svg',
           label: 'Options',
           children: [
             { label: 'Options', route: '/management/options' },

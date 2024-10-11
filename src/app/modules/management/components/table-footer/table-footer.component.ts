@@ -16,7 +16,7 @@ export class TableFooterComponent implements OnChanges {
   @Input() pageSize = 5;
   @Input() totalItem = 0;
   @Input() totalPage = 0;
-  @Input() isLoadingOptions = false;
+  @Input() isLoading = false;
 
   @Output() reloadDataAndPageEvent = new EventEmitter<any>();
 
@@ -57,7 +57,7 @@ export class TableFooterComponent implements OnChanges {
    * Moves to the next page if possible
    */
   nextPage(): void {
-    if (this.pageIdx < this.totalPage && !this.isLoadingOptions) {
+    if (this.pageIdx < this.totalPage && !this.isLoading) {
       this.pageIdx++;
       this.reloadDataAndPage();
     }
@@ -67,7 +67,7 @@ export class TableFooterComponent implements OnChanges {
    * Moves to the previous page if possible
    */
   previousPage(): void {
-    if (this.pageIdx > 1 && !this.isLoadingOptions) {
+    if (this.pageIdx > 1 && !this.isLoading) {
       this.pageIdx--;
       this.reloadDataAndPage();
     }
@@ -78,7 +78,7 @@ export class TableFooterComponent implements OnChanges {
    * @param page The page number to go to
    */
   goToPage(page: number): void {
-    if (this.pageIdx !== page && !this.isLoadingOptions) {
+    if (this.pageIdx !== page && !this.isLoading) {
       this.pageIdx = page;
       this.reloadDataAndPage();
     }

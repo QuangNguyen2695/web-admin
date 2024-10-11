@@ -1,0 +1,46 @@
+<mat-dialog-title class="text-center">
+  <span class="text-xl font-bold">{{ this.data.title }}</span>
+  <button class="absolute right-3" [matDialogClose]="">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+      <path
+        fill-rule="evenodd"
+        d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z"
+        clip-rule="evenodd" />
+    </svg>
+  </button>
+</mat-dialog-title>
+<mat-dialog-content class="pb-5 pt-3">
+  <form class="mx-auto sm:min-w-36 md:min-w-96">
+    <div class="mb-5">
+      <label for="base-input" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">NAME</label>
+      <input
+        type="text"
+        id="category-name"
+        [(ngModel)]="this.category.name"
+        [ngModelOptions]="{ standalone: true }"
+        class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500" />
+    </div>
+    <div class="mb-5">
+      <label for="base-input" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">NAME</label>
+      
+        class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500" />
+    </div>
+    <div class="mb-5">
+      <label for="base-input" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">DESCRIPTIONS</label>
+      <textarea
+        id="message"
+        rows="4"
+        [(ngModel)]="this.category.description"
+        [ngModelOptions]="{ standalone: true }"
+        class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+        placeholder="Write your thoughts here..."></textarea>
+    </div>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions class="line-block space-x-4 text-center">
+  <button
+    [matDialogClose]="this.category"
+    class="flex-none rounded-md bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground">
+    SAVE
+  </button>
+</mat-dialog-actions>

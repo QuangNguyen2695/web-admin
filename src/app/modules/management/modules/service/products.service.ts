@@ -57,7 +57,7 @@ export class ProductsService {
       }),
       catchError((error) => {
         //write log
-        return of([]);
+        return of(null);
       }),
     );
   }

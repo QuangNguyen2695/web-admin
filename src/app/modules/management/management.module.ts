@@ -10,10 +10,15 @@ import { ManagementRoutingModule } from './management-routing.module';
 import { TooltipComponent } from './components/tooltip/tooltip.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NZModule } from 'src/app/library-modules/nz-module';
+import { CreateEditOptionDialogComponent } from './modules/options/component/create-edit-option-dialog/create-edit-option-dialog.component';
+import { MaterialModule } from 'src/app/material-module';
+import { CreateEditCategoriesDialogComponent } from './modules/categories/component/create-edit-category-dialog/create-edit-category-dialog.component';
 
 @NgModule({
-  declarations: [TableHeaderComponent, TableFooterComponent,
-    TableActionComponent, TooltipComponent],
+  declarations: [
+    TableHeaderComponent, TableFooterComponent,
+    TableActionComponent, TooltipComponent, CreateEditOptionDialogComponent, 
+    CreateEditCategoriesDialogComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -21,6 +26,7 @@ import { NZModule } from 'src/app/library-modules/nz-module';
     ManagementRoutingModule,
     AngularSvgIconModule,
     DragDropModule,
+    MaterialModule
   ],
   exports: [
     TableHeaderComponent,

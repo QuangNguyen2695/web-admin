@@ -6,31 +6,31 @@
       Import CSV
     </button>
     <button
-      (click)="addOption()"
+      (click)="addCategory()"
       class="rounded-md bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground"
-      aria-label="Add Option">
-      Add Option
+      aria-label="Add Category">
+      Add Category
     </button>
   </div>
 </div>
 
 <div class="flex min-w-full flex-col rounded-xl border border-muted/20 bg-background p-2">
   <app-table-action
-    [title]="'Options'"
+    [title]="'Categories'"
     [totalItem]="totalItem"
-    (sortDataEvent)="sortOptionsPage($event)"
-    (searchDataEvent)="searchOptionsPage($event)"></app-table-action>
+    (sortDataEvent)="sortCategoriesPage($event)"
+    (searchDataEvent)="searchCategoriesPage($event)"></app-table-action>
   <div class="overflow-x-auto">
     <table class="w-full table-auto border-collapse text-left align-middle leading-5 text-muted-foreground">
       <thead class="border border-muted/20 text-xs text-muted-foreground">
         <tr>
           <th class="w-[50px]">
             <input
-              (change)="toggleOptions($event)"
+              (change)="toggleCategories($event)"
               [(ngModel)]="selectAll"
               class="checkbox checkbox-sm"
               type="checkbox"
-              aria-label="Select all options" />
+              aria-label="Select all categories" />
           </th>
           <th class="min-w-[200px]">Name</th>
           <th class="min-w-[300px]">Description</th>
@@ -38,32 +38,32 @@
         </tr>
       </thead>
       <tbody>
-        @for (option of searchOptions.options; track option.id) {
+        @for (category of searchCategories.categories; track category.id) {
         <tr class="hover:bg-card/50">
           <td class="text-center">
             <input
-              [(ngModel)]="option.selected"
+              [(ngModel)]="category.selected"
               (change)="checkSelectAll()"
               class="checkbox checkbox-sm"
               type="checkbox"
-              [attr.aria-label]="'Select ' + option.name" />
+              [attr.aria-label]="'Select ' + category.name" />
           </td>
-          <td>{{ option.name }}</td>
-          <td>{{ option.description }}</td>
+          <td>{{ category.name }}</td>
+          <td>{{ category.description }}</td>
           <td class="text-center">
             <button
-              (click)="editOption(option)"
+              (click)="editCategory(category)"
               class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
-              aria-label="Edit option">
+              aria-label="Edit category">
               <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
                 <path
                   d="m2.695 14.762-1.262 3.155a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.886L17.5 5.501a2.121 2.121 0 0 0-3-3L3.58 13.419a4 4 0 0 0-.885 1.343Z" />
               </svg>
             </button>
             <button
-              (click)="deleteOption(option.id)"
+              (click)="deleteCategory(category.id)"
               class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
-              aria-label="Delete option">
+              aria-label="Delete category">
               <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
                 <path
                   fill-rule="evenodd"
@@ -75,7 +75,7 @@
         </tr>
         } @empty {
         <tr>
-          <td class="py-4 text-center text-sm" colspan="4">No options found</td>
+          <td class="py-4 text-center text-sm" colspan="4">No categories found</td>
         </tr>
         }
       </tbody>
@@ -85,8 +85,8 @@
     [pageIdx]="pageIdx"
     [pageSize]="pageSize"
     [totalItem]="totalItem"
-    [isLoading]="isLoadingOptions"
+    [isLoading]="isLoadingCategories"
     [totalPage]="totalPage"
-    (reloadDataAndPageEvent)="reloadOptionsPage($event)">
+    (reloadDataAndPageEvent)="reloadCategoriesPage($event)">
   </app-table-footer>
 </div>
