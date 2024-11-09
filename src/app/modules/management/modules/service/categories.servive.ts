@@ -7,7 +7,7 @@ import { Category, Category2Create } from '../../model/categories.model';
   providedIn: 'root',
 })
 export class CatagoriesService {
-  url = 'catagories';
+  url = 'categories';
 
   constructor(private apiGateawayService: ApiGateawayService) { }
 
@@ -50,7 +50,7 @@ export class CatagoriesService {
     );
   }
 
-  deleteCategory(id: string) {
+  deleteCategory(id: number) {
     const deleteCategoryUrl = this.url + `/${id}`;
     return this.apiGateawayService.Cdelete(deleteCategoryUrl).pipe(
       tap((res: any) => {

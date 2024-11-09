@@ -17,8 +17,10 @@ import { CreateEditCategoriesDialogComponent } from './modules/categories/compon
 @NgModule({
   declarations: [
     TableHeaderComponent, TableFooterComponent,
-    TableActionComponent, TooltipComponent, CreateEditOptionDialogComponent, 
-    CreateEditCategoriesDialogComponent],
+    TableActionComponent, TooltipComponent,
+    CreateEditOptionDialogComponent,
+    CreateEditCategoriesDialogComponent,
+  ],
   imports: [
     CommonModule,
     FormsModule,
@@ -26,7 +28,8 @@ import { CreateEditCategoriesDialogComponent } from './modules/categories/compon
     ManagementRoutingModule,
     AngularSvgIconModule,
     DragDropModule,
-    MaterialModule
+    MaterialModule,
+    NZModule
   ],
   exports: [
     TableHeaderComponent,

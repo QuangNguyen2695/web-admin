@@ -21,11 +21,6 @@
         class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500" />
     </div>
     <div class="mb-5">
-      <label for="base-input" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">NAME</label>
-      
-        class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500" />
-    </div>
-    <div class="mb-5">
       <label for="base-input" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">DESCRIPTIONS</label>
       <textarea
         id="message"
@@ -34,6 +29,38 @@
         [ngModelOptions]="{ standalone: true }"
         class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
         placeholder="Write your thoughts here..."></textarea>
+    </div>
+    <div class="mb-5">
+      <label for="base-input" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
+        SELECT PARRENT CATEGORY
+      </label>
+      <div class="rounded-md border border-gray-300 p-2">
+        <nz-tree-view [nzTreeControl]="treeControl" [nzDataSource]="dataSource" [nzDirectoryTree]="true">
+          <nz-tree-node *nzTreeNodeDef="let node" nzTreeNodePadding>
+            <nz-tree-node-toggle nzTreeNodeNoopToggle></nz-tree-node-toggle>
+            <nz-tree-node-option
+              [nzDisabled]="node.disabled"
+              [nzSelected]="selectListSelection.isSelected(node)"
+              (nzClick)="selectListSelection.toggle(node)">
+              <span nz-icon nzType="file" nzTheme="outline"></span>
+              {{ node.name }}
+            </nz-tree-node-option>
+          </nz-tree-node>
+
+          <nz-tree-node *nzTreeNodeDef="let node; when: hasChild" nzTreeNodePadding>
+            <nz-tree-node-toggle>
+              <span nz-icon nzType="caret-down" nzTreeNodeToggleRotateIcon></span>
+            </nz-tree-node-toggle>
+            <nz-tree-node-option
+              [nzDisabled]="node.disabled"
+              [nzSelected]="selectListSelection.isSelected(node)"
+              (nzClick)="selectListSelection.toggle(node)">
+              <span nz-icon [nzType]="treeControl.isExpanded(node) ? 'folder-open' : 'folder'" nzTheme="outline"></span>
+              {{ node.name }}
+            </nz-tree-node-option>
+          </nz-tree-node>
+        </nz-tree-view>
+      </div>
     </div>
   </form>
 </mat-dialog-content>
