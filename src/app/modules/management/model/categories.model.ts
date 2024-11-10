@@ -21,10 +21,13 @@ export class Category2Create {
 
 
 export interface CategoryFlatNode {
-  expandable: boolean;
+  id: number
   name: string;
+
+  expandable: boolean;
   level: number;
   disabled: boolean;
+  isSelected: boolean;
 }
 
 // Define interface for the tree node structure

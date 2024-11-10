@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { toast } from 'ngx-sonner';
 import { BehaviorSubject, Subject } from 'rxjs';
 
 @Injectable({
@@ -21,5 +22,18 @@ export class Utils {
 
     hideLoading() {
         this.loadingSubject.next(false);
+    }
+
+    handleRequestError(error: any): void {
+        const msg = 'An error occurred while processing your request';
+        toast.error(msg, {
+            position: 'bottom-right',
+            description: error.message || 'Please try again later',
+            action: {
+                label: 'Dismiss',
+                onClick: () => { },
+            },
+            actionButtonStyle: 'background-color:#DC2626; color:white;',
+        });
     }
 }

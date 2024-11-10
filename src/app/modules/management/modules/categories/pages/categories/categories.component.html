@@ -126,10 +126,11 @@
         [nzDisabled]="node.disabled"
         (nzClick)="leafItemSelectionToggle(node)"
         class="w-full !items-center">
-        <span [innerHTML]="node.name | nzHighlight : searchValue : 'i' : 'text-red-500'"></span>
+        <span [innerHTML]="node.id + node.name | nzHighlight : searchValue : 'i' : 'text-red-500'"></span>
       </nz-tree-node-option>
       <div class="inline-flex">
         <button
+          (click)="editCategory(node)"
           class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
           aria-label="Edit option">
           <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
@@ -138,6 +139,7 @@
           </svg>
         </button>
         <button
+          (click)="deleteCategory(node.id)"
           class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
           aria-label="Delete option">
           <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
@@ -163,10 +165,11 @@
         [nzDisabled]="node.disabled"
         (nzClick)="itemSelectionToggle(node)"
         class="w-full !items-center">
-        <span [innerHTML]="node.name | nzHighlight : searchValue : 'i' : 'text-red-500'"></span>
+        <span [innerHTML]="node.id + node.name | nzHighlight : searchValue : 'i' : 'text-red-500'"></span>
       </nz-tree-node-option>
       <div class="inline-flex">
         <button
+          (click)="editCategory(node)"
           class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
           aria-label="Edit option">
           <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
@@ -175,6 +178,7 @@
           </svg>
         </button>
         <button
+          (click)="deleteCategory(node.id)"
           class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
           aria-label="Delete option">
           <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">

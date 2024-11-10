@@ -23,8 +23,8 @@ export class CatagoriesService {
   }
 
   createCategory(category: Category2Create) {
-    const updatecategorycategoryUrl = this.url;
-    return this.apiGateawayService.Cpost(updatecategorycategoryUrl, category).pipe(
+    const createCategorycategoryUrl = this.url;
+    return this.apiGateawayService.Cpost(createCategorycategoryUrl, category).pipe(
       tap((res: any) => {
         console.log('🚀 ~ CaterogiesService ~ tap ~ res:', res);
       }),

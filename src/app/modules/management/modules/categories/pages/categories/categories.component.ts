@@ -116,13 +116,16 @@ export class CategoriesComponent implements OnInit {
   transformer = (node: CategoryTreeNode, level: number): CategoryFlatNode => {
     const existingNode = this.nestedNodeMap.get(node);
     const flatNode =
-      existingNode && existingNode.name === node.name
+      existingNode && existingNode.id === node.id
         ? existingNode
         : {
-          expandable: !!node.children && node.children.length > 0,
+          id: node.id,
           name: node.name,
+
+          expandable: !!node.children && node.children.length > 0,
           level,
-          disabled: !!node.disabled
+          disabled: !!node.disabled,
+          isSelected: false
         };
     this.flatNodeMap.set(flatNode, node);
     this.nestedNodeMap.set(node, flatNode);
@@ -223,7 +226,7 @@ export class CategoriesComponent implements OnInit {
         this.catagoriesService.deleteCategory(id).subscribe({
           next: (res: any) => {
             if (res) {
-              this.searchCategories.categories = this.searchCategories.categories.filter((category) => category.id !== id);
+              this.loadData();
               toast.success('Category deleted successfully');
             }
           },
@@ -233,27 +236,22 @@ export class CategoriesComponent implements OnInit {
     });
   }
 
-  editCategory(category: Category): void {
+  editCategory(node: CategoryFlatNode): void {
+
+    const categoryToUpdate = this.searchCategories.categories.find(c => c.id == node.id)
+
     const dialogRef = this.dialog.open(CreateEditCategoriesDialogComponent, {
       data: {
         title: 'Edit Category',
-        category: { ...category },
+        listCategories: this.treeCategories,
+        category: { ...categoryToUpdate },
       },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.catagoriesService.updateCategory(result).subscribe({
-          next: (res: Category) => {
-            if (res) {
-              this.searchCategories.categories = this.searchCategories.categories.map((category: Category) =>
-                category.id === res.id ? { ...category, ...res } : category,
-              );
-              toast.success('Category updated successfully');
-            }
-          },
-          error: (error) => this.handleRequestError(error),
-        });
+        this.loadData();
+        toast.success('Category updated successfully');
       }
     });
   }
@@ -268,15 +266,8 @@ export class CategoriesComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.catagoriesService.createCategory(result).subscribe({
-          next: (res: Category) => {
-            if (res) {
-              this.loadData();
-              toast.success('Category added successfully');
-            }
-          },
-          error: (error) => this.handleRequestError(error),
-        });
+        this.loadData();
+        toast.success('Category added successfully');
       }
     });
   }
@@ -360,6 +351,10 @@ export class CategoriesComponent implements OnInit {
     } else if (!nodeSelected && descAllSelected) {
       this.checklistSelection.select(node);
     }
+  }
+
+  getNode(name: string): CategoryFlatNode | null {
+    return this.treeControl.dataNodes.find(n => n.name === name) || null;
   }
 
   getParentNode(node: CategoryFlatNode): CategoryFlatNode | null {
