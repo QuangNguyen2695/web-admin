@@ -1,0 +1,123 @@
+/* Toolbar styles */
+.toolbar {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* CSS cho các nút */
+  .btn {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+
+  /* CSS cho các nút kiểu */
+  .btn-type {
+    background-color: #302f2f;
+    color: white;
+  }
+
+  .btn-type:hover {
+    background-color: #302f2f;
+    transform: scale(1.05);
+  }
+
+  /* CSS cho nút lưu */
+  .btn-save {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .btn-save:hover {
+    background-color: #218838;
+    transform: scale(1.05);
+  }
+}
+
+#type-select {
+  padding: 5px;
+  font-size: 14px;
+}
+
+/* Matrix container */
+.matrix {
+  display: grid;
+  gap: 5px;
+}
+
+/* Row styling */
+.row {
+  display: flex;
+}
+
+/* Cell styling */
+.cell {
+  width: 80px;
+  height: 80px;
+  border: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  position: relative;
+  text-align: center;
+}
+
+.selected {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  text-align: center;
+}
+
+.cell-name {
+  position: absolute;
+}
+.cell-input {
+  position: absolute;
+  width: 40px;
+}
+
+.cell.editing {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+}
+
+/* Input field inside editing cells */
+.cell input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  text-align: center;
+  font-size: 14px;
+  background-color: transparent;
+}
+
+.cell input:focus {
+  outline: none;
+}
+
+/* Ẩn các ô không được chọn */
+.hidden {
+  visibility: hidden;
+} /* Màu sắc cho các tùy chọn mới */
+
+.cell.has-error {
+  border: 2px solid red;
+}
+
+/* Icon styling */
+.icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}

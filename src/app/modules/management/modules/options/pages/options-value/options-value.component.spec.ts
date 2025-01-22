@@ -1,17 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { OptionsValueComponent } from './options-value.component';
 
-import { TableComponent } from './table.component';
-
-describe('TableComponent', () => {
-  let component: TableComponent;
-  let fixture: ComponentFixture<TableComponent>;
+describe('OptionsValueComponent', () => {
+  let component: OptionsValueComponent;
+  let fixture: ComponentFixture<OptionsValueComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableComponent],
+      imports: [OptionsValueComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TableComponent);
+    fixture = TestBed.createComponent(OptionsValueComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

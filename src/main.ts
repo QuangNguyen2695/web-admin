@@ -8,6 +8,7 @@ import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { AppModule } from './app/app.module';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideEnvironmentNgxMask } from 'ngx-mask';
 
 if (ENV.production) {
   enableProdMode();
@@ -18,7 +19,13 @@ if (ENV.production) {
 }
 
 bootstrapApplication(AppComponent, {
-  providers: [importProvidersFrom(BrowserModule, AppModule), provideAnimations(), provideAnimationsAsync(), provideAnimationsAsync()],
+  providers: [
+    importProvidersFrom(BrowserModule, AppModule),
+    provideAnimations(),
+    provideAnimationsAsync(),
+    provideAnimationsAsync(),
+    provideEnvironmentNgxMask(),
+  ],
 }).catch((err) => console.error(err));
 
 function selfXSSWarning() {

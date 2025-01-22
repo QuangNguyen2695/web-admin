@@ -32,7 +32,7 @@ import { NZModule } from 'src/app/library-modules/nz-module';
     FormsModule,
     ReactiveFormsModule,
     DragDropModule,
-    NZModule
+    NZModule,
   ],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA

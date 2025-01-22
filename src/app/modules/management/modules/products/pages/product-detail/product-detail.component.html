@@ -307,7 +307,7 @@
                                 }
                                 
                                 <td class="p-2 border-b border-border content-baseline">
-                                    <input type="text" placeholder="Giá bán" class="mt-1 block w-full border border-border rounded-md p-2 text-sm" [formControlName]="'price'" 
+                                    <input type="text" mask="separator.2" thousandSeparator="," separatorLimit="99999999" placeholder="Giá bán" class="mt-1 block w-full border border-border rounded-md p-2 text-sm" [formControlName]="'price'"
                                         [ngClass]="{'border-red-500 border border-border' : getFormGroup(variant, 'price').errors?.['required'] 
                                         && getFormGroup(variant, 'price').touched}"/>
                                     <p class="mt-1 text-xs text-red-500" 

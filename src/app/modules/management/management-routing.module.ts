@@ -4,6 +4,7 @@ import { OptionsComponent } from './modules/options/pages/options/options.compon
 import { ManagementComponent } from './management.component';
 import { ProductsComponent } from './modules/products/pages/products/products.component';
 import { ProductDetailComponent } from './modules/products/pages/product-detail/product-detail.component';
+import { OptionsValueComponent } from './modules/options/pages/options-value/options-value.component';
 
 const routes: Routes = [
   {
@@ -14,6 +15,11 @@ const routes: Routes = [
       {
         path: 'options',
         component: OptionsComponent,
+        loadChildren: () => import('./modules/options/options.module').then((m) => m.OptionsModule),
+      },
+      {
+        path: 'test',
+        component: OptionsValueComponent,
         loadChildren: () => import('./modules/options/options.module').then((m) => m.OptionsModule),
       },
       {

@@ -1,14 +1,5 @@
-import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import {
-  Component,
-  ComponentFactoryResolver,
-  ElementRef,
-  OnInit,
-  QueryList,
-  ViewChild,
-  ViewChildren,
-  ViewContainerRef,
-} from '@angular/core';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { Component, ComponentFactoryResolver, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import {
   AbstractControl,
   FormArray,
@@ -25,6 +16,7 @@ import { OptionsProductForm } from 'src/app/modules/management/model/options-pro
 import { AddVaritantProductFormComponent } from '../../component/add-varitant-product-form/add-varitant-product-form.component';
 import { v4 as uuid } from 'uuid';
 import { ProductService } from '../../../service/product.service';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-product-detail',
@@ -138,12 +130,10 @@ export class ProductDetailComponent implements OnInit {
     this.productGalleryImages.forEach((item: any) => {
       if (item.value) galleryImage.push(item.value);
     });
-    const uId = uuid();
 
     const productUpsert = {
-      id: uId,
       name: this.productForm.get('productName')?.value,
-      mainImage: this.productMainImage,
+      mainImage: this.productMainImage.value,
       galleryImage: galleryImage,
       cate: this.productForm.get('productCate')?.value,
       desc: this.productForm.get('productDesc')?.value,
@@ -155,11 +145,11 @@ export class ProductDetailComponent implements OnInit {
       '🚀 ~ ProductDetailComponent ~ onSubmit ~ this.productForm.getRawValue();:',
       this.productForm.getRawValue(),
     );
-    this.uploadImageToFBStorage(productUpsert);
+    this.createProduct(productUpsert);
   }
 
-  private uploadImageToFBStorage(productUpsert: any) {
-    this.productService.uploadImageToFBStorage(productUpsert.id, productUpsert.mainImage);
+  private createProduct(productUpsert: any) {
+    this.productService.createProduct();
   }
 
   onFileChange(event: any, currentImageIndex: number) {

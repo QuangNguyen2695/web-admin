@@ -13,6 +13,10 @@ import { MaterialModule } from './library-modules/material-module';
 import { provideNzI18n, en_US } from 'ng-zorro-antd/i18n';
 import { UtilsService } from './base/utils.sevice';
 import { ENV } from '@app/env';
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFireStorageModule } from '@angular/fire/compat/storage';
+import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 
 @NgModule({
   declarations: [CreateEditOptionDialogComponent],
@@ -27,6 +31,11 @@ import { ENV } from '@app/env';
     ReactiveFormsModule,
 
     MaterialModule,
+
+    AngularFireModule.initializeApp(ENV.firebase),
+    AngularFireStorageModule,
+    AngularFireAuthModule,
+    AngularFirestoreModule,
   ],
   providers: [provideAnimationsAsync(), provideAnimations(), provideNzI18n(en_US), UtilsService],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
