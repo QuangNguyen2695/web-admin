@@ -70,7 +70,8 @@ export class OptionsValueComponent implements OnInit {
         errorName: '',
         status: 'available',
         hasError: false,
-        allowAutoNameEdit: false // Thêm thuộc tính allowAutoNameEdit
+        allowAutoNameEdit: false, // Thêm thuộc tính allowAutoNameEdit
+        isDisappearing: false // Thêm thuộc tính isDisappearing
       })),
     );
   }
@@ -266,6 +267,10 @@ export class OptionsValueComponent implements OnInit {
     this.updateDisplayMatrix();
     console.log('Selected Cells:', selectedCells);
     toast.success('Dữ liệu đã được lưu thành công!');
+  }
+
+  resetSelected(){
+    this.initializeMatrix();
   }
 
 

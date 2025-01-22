@@ -4,6 +4,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+
   /* CSS cho các nút */
   .btn {
     padding: 10px 20px;
@@ -82,6 +83,7 @@
 .cell-name {
   position: absolute;
 }
+
 .cell-input {
   width: 40px;
   border: 1px solid #ccc;
@@ -111,7 +113,9 @@
 /* Ẩn các ô không được chọn */
 .hidden {
   visibility: hidden;
-} /* Màu sắc cho các tùy chọn mới */
+}
+
+/* Màu sắc cho các tùy chọn mới */
 
 .has-error {
   border: 2px solid red;
@@ -122,4 +126,21 @@
   width: 20px;
   height: 20px;
   margin-right: 5px;
+}
+
+/* Animation cho xuất hiện icon */
+@keyframes showIcon {
+  from {
+    filter: blur(10px);
+    opacity: 0;
+  }
+
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+.show-icon {
+  animation: showIcon 0.3s forwards;
 }

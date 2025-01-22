@@ -4,11 +4,12 @@
     <svg-icon src="assets/icons/{{ type.icon }}" [svgClass]="'h-5 w-5'"> </svg-icon>
   </button>
   <button class="btn btn-save" (click)="saveSelected()">Lưu</button>
+  <button class="btn btn-save" (click)="resetSelected()">Reset</button>
 </div>
 
 <div class="matrix">
   <div *ngFor="let row of matrix; let i = index" class="row">
-    <div *ngFor="let cell of row; let j = index" class="flex items-center justify-center relative">
+    <div *ngFor="let cell of row; let j = index" class="relative flex items-center justify-center">
       <div
         [class.cell]="!cell.isSelected"
         [class.selected]="cell.isSelected"
@@ -20,7 +21,12 @@
         (contextmenu)="startEdit(i, j, $event)"
         (click)="onClick(i, j, $event)">
         <ng-container *ngIf="cell.type > 0">
-          <svg-icon [src]="getIconByType(cell.type, cell.status)" [svgClass]="'h-16 w-16'"></svg-icon>
+          <svg-icon
+            [src]="getIconByType(cell.type, cell.status)"
+            [svgClass]="'h-16 w-16'"
+            [ngClass]="{
+              'show-icon': cell.isSelected,
+            }"></svg-icon>
           <div *ngIf="cell.allowAutoNameEdit && !cell.isEditing" class="cell-name">
             {{ cell.name }}
           </div>
