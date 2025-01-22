@@ -8,42 +8,46 @@
 
 <div class="matrix">
   <div *ngFor="let row of matrix; let i = index" class="row">
-    <div
-      *ngFor="let cell of row; let j = index"
-      [class.cell]="!cell.isSelected"
-      [class.selected]="cell.isSelected"
-      [class.editing]="cell.isEditing"
-      [class.has-error]="cell.hasError"
-      (mousedown)="onMouseDown(i, j, $event)"
-      (mouseup)="onMouseUp(i, j, $event)"
-      (mouseleave)="onMouseLeave($event)"
-      (contextmenu)="startEdit(i, j, $event)"
-      (click)="onClick(i, j, $event)">
-      <ng-container *ngIf="cell.type > 0">
-        <svg-icon [src]="getIconByType(cell.type, cell.status)" [svgClass]="'h-16 w-16'"></svg-icon>
-        <div *ngIf="isNameEditable(cell.type) && !cell.isEditing; else editMode" class="cell-name">{{ cell.name }}</div>
-        <ng-template #editMode>
-          <input
-            #cellInput
-            *ngIf="isNameEditable(cell.type)"
-            class="cell-input"
-            [(ngModel)]="cell.name"
-            (keydown.enter)="saveEdit(i, j)" />
-        </ng-template>
-      </ng-container>
+    <div *ngFor="let cell of row; let j = index" class="flex items-center justify-center relative">
+      <div
+        [class.cell]="!cell.isSelected"
+        [class.selected]="cell.isSelected"
+        [class.editing]="cell.isEditing"
+        [class.has-error]="cell.hasError"
+        (mousedown)="onMouseDown(i, j, $event)"
+        (mouseup)="onMouseUp(i, j, $event)"
+        (mouseleave)="onMouseLeave($event)"
+        (contextmenu)="startEdit(i, j, $event)"
+        (click)="onClick(i, j, $event)">
+        <ng-container *ngIf="cell.type > 0">
+          <svg-icon [src]="getIconByType(cell.type, cell.status)" [svgClass]="'h-16 w-16'"></svg-icon>
+          <div *ngIf="cell.allowAutoNameEdit && !cell.isEditing" class="cell-name">
+            {{ cell.name }}
+          </div>
+        </ng-container>
+      </div>
+      <div *ngIf="cell.allowAutoNameEdit && cell.isEditing" class="absolute">
+        <input
+          #cellInput
+          class="cell-input"
+          [class.has-error]="cell.hasError"
+          [(ngModel)]="cell.name"
+          (keydown.enter)="saveEdit(i, j)" />
+      </div>
     </div>
   </div>
 </div>
 
 <h3>Ma trận thứ hai</h3>
 <div class="matrix">
-  <div *ngFor="let row of selectedMatrix; let i = index" class="row">
+  <div *ngFor="let row of selectedMatrix; let i = index" class="row" [style.display]="displayRows[i] ? 'flex' : 'none'">
     <div
       *ngFor="let cell of row; let j = index"
       class="selected"
+      [style.display]="visibleColumns[j] ? 'flex' : 'none'"
       [style.visibility]="cell.type > 0 ? 'visible' : 'hidden'">
       <!-- Hiển thị icon và tên nếu type > 0 -->
-      <svg-icon [src]="cell.icon" [svgClass]="'h-16 w-16'"></svg-icon>
+      <svg-icon [src]="getIconByType(cell.type, cell.status)" [svgClass]="'h-16 w-16'"></svg-icon>
       <div class="cell-name">{{ cell.name }}</div>
     </div>
   </div>

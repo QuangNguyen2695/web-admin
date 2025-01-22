@@ -20,10 +20,10 @@ export class OptionsValueComponent implements OnInit {
     isEditing: boolean;
     isSelected: boolean;
     name: string;
-    icon: string;
     status: string;
     errorName: string;
     hasError: boolean;
+    allowAutoNameEdit: boolean;
   }[][] = []; // Ma trận lưu giá trị, kiểu, trạng thái chỉnh sửa, trạng thái chọn, tên
   currentType: number = 1; // Kiểu hiện tại đang chọn
   usedNames: Set<number> = new Set(); // Danh sách lưu trữ các giá trị đã được sử dụng
@@ -31,13 +31,12 @@ export class OptionsValueComponent implements OnInit {
     value: number;
     type: number;
     name: string;
-    icon: string;
     status: string;
   }[][] = []; // Ma trận thứ hai lưu giá trị, kiểu, trạng thái chỉnh sửa, trạng thái chọn, tên và trạng thái của các ô được chọn
   originalName: string = '';
   holdTimeout: any;
   types = [
-    { value: 1, label: 'Ghế', allowAutoNameEdit: true, icon: 'seat-available.svg', blockIcon: 'seat-block.svg' },
+    { value: 1, label: 'Ghế', allowAutoNameEdit: true, icon: 'seat-available.svg', blockIcon: 'seat-block.svg', selectedIcon: "seat-select" },
     { value: 2, label: 'Hành lang', allowAutoNameEdit: false, icon: 'street.svg' },
     { value: 3, label: 'Tài xế', allowAutoNameEdit: false, icon: 'driver.svg' },
   ];
@@ -58,6 +57,7 @@ export class OptionsValueComponent implements OnInit {
   }
 
   // Khởi tạo ma trận và trạng thái chọn
+  // Khởi tạo ma trận và trạng thái chọn
   initializeMatrix(): void {
     this.matrix = Array.from({ length: this.rows }, (_, i) =>
       Array.from({ length: this.cols }, (_, j) => ({
@@ -69,10 +69,12 @@ export class OptionsValueComponent implements OnInit {
         icon: '',
         errorName: '',
         status: 'available',
-        hasError: false, // Thêm thuộc tính hasError
+        hasError: false,
+        allowAutoNameEdit: false // Thêm thuộc tính allowAutoNameEdit
       })),
     );
   }
+
 
   // Chọn kiểu (type)
   selectType(type: number): void {
@@ -82,63 +84,64 @@ export class OptionsValueComponent implements OnInit {
   // Áp dụng kiểu vào ô được chọn, không cho phép bỏ chọn khi đang chỉnh sửa
   applyType(row: number, col: number): void {
     const cell = this.matrix[row][col];
-    const selectedType = this.types.find((type) => type.value === this.currentType);
-    // Thêm điều kiện kiểm tra nếu type của cell đã chọn giống với currentType thì không cho chọn nữa
-    if (cell.type === this.currentType) {
+    const selectedType = this.types.find(type => type.value === this.currentType);
+    // Lưu trạng thái chỉnh sửa hiện tại trước khi áp dụng loại mới
+    this.matrix.forEach((matrixRow, i) => matrixRow.forEach((cell, j) => cell.isEditing && this.saveEdit(i, j)));
+    // Kiểm tra nếu ô đang chỉnh sửa hoặc có lỗi thì không làm gì
+    if (cell.isEditing || this.hasError()) return;
+
+    // Nếu ô đã được chọn và loại hiện tại giống với loại của ô, bỏ chọn ô
+    if (cell.isSelected && cell.type === this.currentType) {
+      cell.isSelected = false;
+      this.usedNames.delete(parseInt(cell.name.slice(1))); // Xóa tên khỏi usedNames
+      cell.type = 0;
+      cell.name = '';
+      cell.allowAutoNameEdit = false; // Cập nhật allowAutoNameEdit
       return;
     }
 
-    if (cell.isEditing) {
+    // Nếu ô đã được chọn và loại hiện tại khác với loại của ô, áp dụng loại mới
+    if (cell.isSelected && cell.type !== this.currentType) {
+      this.updateCellType(cell, selectedType);
       return;
     }
 
-    // Kiểm tra và lưu trạng thái chỉnh sửa hiện tại
-    this.matrix.forEach((matrixRow, i) => {
-      matrixRow.forEach((cell, j) => {
-        if (cell.isEditing) {
-          this.saveEdit(i, j);
-        }
-      });
-    });
-
-    if (this.hasError()) {
-      return; // Không cho phép chuyển nếu có lỗi
-    }
-
-    // Nếu ô đang là type 1 và được thay đổi thành type 2 hoặc 3, cập nhật lại usedNames
-    if (cell.type === 1 && (this.currentType === 2 || this.currentType === 3)) {
+    // Nếu ô đang là loại 1 và loại mới là 2 hoặc 3, xóa tên khỏi usedNames
+    if (cell.type === 1 && [2, 3].includes(this.currentType)) {
       this.usedNames.delete(parseInt(cell.name.slice(1)));
     }
 
-    this.matrix.forEach((matrixRow, i) => {
-      matrixRow.forEach((cell, j) => {
-        if (cell.isEditing) {
-          this.saveEdit(i, j);
-        }
-      });
-    });
+    // Lưu trạng thái chỉnh sửa hiện tại trước khi áp dụng loại mới
+    this.matrix.forEach((matrixRow, i) => matrixRow.forEach((cell, j) => cell.isEditing && this.saveEdit(i, j)));
 
+    // Nếu loại hiện tại hợp lệ, áp dụng loại mới cho ô
     if (this.currentType > 0) {
-      cell.type = this.currentType;
-      cell.isSelected = true;
+      this.updateCellType(cell, selectedType);
+    }
+  }
 
-      // Xóa tên nếu type là 2 hoặc 3
-      if (this.currentType === 2 || this.currentType === 3) {
-        cell.name = '';
-      } else if (selectedType?.allowAutoNameEdit) {
-        const maxNames = this.rows * this.cols;
-        for (let i = 1; i <= maxNames; i++) {
-          if (!this.usedNames.has(i)) {
-            cell.name = `A${i.toString().padStart(2, '0')}`;
-            this.usedNames.add(i);
-            break;
-          }
+  updateCellType(cell: any, selectedType: any): void {
+    cell.type = this.currentType;  // Cập nhật loại của ô
+    cell.isSelected = true;  // Đánh dấu ô đã được chọn
+
+    // Cập nhật allowAutoNameEdit theo loại
+    cell.allowAutoNameEdit = selectedType?.allowAutoNameEdit || false;
+
+    // Nếu loại là 2 hoặc 3, xóa tên của ô
+    if ([2, 3].includes(this.currentType)) {
+      cell.name = '';
+    } else if (selectedType?.allowAutoNameEdit) {
+      const maxNames = this.rows * this.cols;
+      for (let i = 1; i <= maxNames; i++) {
+        if (!this.usedNames.has(i)) {
+          cell.name = `A${i.toString().padStart(2, '0')}`;  // Tạo tên mới cho ô
+          this.usedNames.add(i);
+          break;
         }
       }
-
-      // Cập nhật icon bằng hàm getIconByType
-      cell.icon = this.getIconByType(cell.type, cell.status);
     }
+
+    cell.icon = this.getIconByType(cell.type, cell.status);  // Cập nhật icon cho ô
   }
 
   // Hàm focus vào ô đang chỉnh sửa
@@ -246,11 +249,9 @@ export class OptionsValueComponent implements OnInit {
     cell.isEditing = false; // Kết thúc chế độ chỉnh sửa
   }
 
-  // Phương thức lưu giá trị selected
   saveSelected(): void {
     // Ánh xạ dữ liệu từ các ô được chọn trong ma trận 1 sang ma trận 2
     const selectedCells = this.matrix.flat().filter((cell) => cell.isSelected);
-    // Ánh xạ dữ liệu từ selectedCells sang selectedMatrix
     selectedCells.forEach((cell) => {
       const row = Math.floor((cell.value - 1) / this.cols);
       const col = (cell.value - 1) % this.cols;
@@ -259,13 +260,14 @@ export class OptionsValueComponent implements OnInit {
         type: cell.type,
         name: cell.name,
         status: cell.status,
-        icon: this.getIconByType(cell.type, cell.status),
       };
     });
 
-    console.log('Selected Cells:', this.selectedMatrix);
+    this.updateDisplayMatrix();
+    console.log('Selected Cells:', selectedCells);
     toast.success('Dữ liệu đã được lưu thành công!');
   }
+
 
   // Phương thức thay đổi trạng thái của ô trong ma trận thứ hai
   toggleStatus(row: number, col: number, event: MouseEvent): void {
@@ -285,11 +287,56 @@ export class OptionsValueComponent implements OnInit {
     return this.matrix.some((row) => row.some((cell) => cell.hasError));
   }
 
-  // Phương thức kiểm tra xem type có cho phép chỉnh sửa tên hay không
-  isNameEditable(type: number): boolean {
-    const selectedType = this.types.find((t) => t.value === type);
-    return selectedType ? selectedType.allowAutoNameEdit : false;
+  displayRows: boolean[] = [];
+  visibleColumns: boolean[] = [];
+  selectedColumns: number[] = [];
+
+  ngOnInit() {
+    this.updateDisplayMatrix();
   }
 
-  ngOnInit() {}
+  // Phương thức cập nhật displayRows và visibleColumns
+  updateDisplayMatrix() {
+    const rows = this.selectedMatrix.length;
+    const cols = this.selectedMatrix[0].length;
+
+    // Khởi tạo mảng trạng thái hiển thị
+    this.displayRows = Array(rows).fill(false);
+    this.visibleColumns = Array(cols).fill(false);
+    this.selectedColumns = [];
+    const selectedRows = new Set<number>(); // Tập hợp các hàng được chọn
+
+    // Cập nhật trạng thái hiển thị dựa trên các ô được chọn
+    this.selectedMatrix.forEach((row, i) => {
+      row.forEach((cell, j) => {
+        if (cell.type > 0) {
+          this.displayRows[i] = true;
+          this.selectedColumns.push(j);
+          selectedRows.add(i); // Thêm hàng được chọn vào tập hợp
+        }
+      });
+    });
+
+    // Đảm bảo rằng tất cả các hàng giữa hàng đầu tiên và hàng cuối cùng đều được hiển thị
+    const selectedRowsArray = Array.from(selectedRows).sort((a, b) => a - b);
+    const firstSelectedRow = selectedRowsArray[0];
+    const lastSelectedRow = selectedRowsArray[selectedRowsArray.length - 1];
+
+    for (let i = firstSelectedRow; i <= lastSelectedRow; i++) {
+      this.displayRows[i] = true;
+    }
+
+    // Sắp xếp các cột được chọn
+    this.selectedColumns.sort((a, b) => a - b);
+
+    // Hiển thị các cột từ cột đầu tiên được chọn đến cột cuối cùng được chọn
+    if (this.selectedColumns.length > 0) {
+      const firstCol = this.selectedColumns[0];
+      const lastCol = this.selectedColumns[this.selectedColumns.length - 1];
+      for (let j = firstCol; j <= lastCol; j++) {
+        this.visibleColumns[j] = true;
+      }
+    }
+  }
+
 }

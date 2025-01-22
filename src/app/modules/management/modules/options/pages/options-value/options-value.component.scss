@@ -83,8 +83,10 @@
   position: absolute;
 }
 .cell-input {
-  position: absolute;
   width: 40px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 0 2px;
 }
 
 .cell.editing {
@@ -111,7 +113,7 @@
   visibility: hidden;
 } /* Màu sắc cho các tùy chọn mới */
 
-.cell.has-error {
+.has-error {
   border: 2px solid red;
 }
 
