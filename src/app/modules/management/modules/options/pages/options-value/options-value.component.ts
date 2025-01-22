@@ -36,7 +36,14 @@ export class OptionsValueComponent implements OnInit {
   originalName: string = '';
   holdTimeout: any;
   types = [
-    { value: 1, label: 'Ghế', allowAutoNameEdit: true, icon: 'seat-available.svg', blockIcon: 'seat-block.svg', selectedIcon: "seat-select" },
+    {
+      value: 1,
+      label: 'Ghế',
+      allowAutoNameEdit: true,
+      icon: 'seat-available.svg',
+      blockIcon: 'seat-block.svg',
+      selectedIcon: 'seat-select',
+    },
     { value: 2, label: 'Hành lang', allowAutoNameEdit: false, icon: 'street.svg' },
     { value: 3, label: 'Tài xế', allowAutoNameEdit: false, icon: 'driver.svg' },
   ];
@@ -71,11 +78,10 @@ export class OptionsValueComponent implements OnInit {
         status: 'available',
         hasError: false,
         allowAutoNameEdit: false, // Thêm thuộc tính allowAutoNameEdit
-        isDisappearing: false // Thêm thuộc tính isDisappearing
+        isDisappearing: false, // Thêm thuộc tính isDisappearing
       })),
     );
   }
-
 
   // Chọn kiểu (type)
   selectType(type: number): void {
@@ -85,7 +91,7 @@ export class OptionsValueComponent implements OnInit {
   // Áp dụng kiểu vào ô được chọn, không cho phép bỏ chọn khi đang chỉnh sửa
   applyType(row: number, col: number): void {
     const cell = this.matrix[row][col];
-    const selectedType = this.types.find(type => type.value === this.currentType);
+    const selectedType = this.types.find((type) => type.value === this.currentType);
     // Lưu trạng thái chỉnh sửa hiện tại trước khi áp dụng loại mới
     this.matrix.forEach((matrixRow, i) => matrixRow.forEach((cell, j) => cell.isEditing && this.saveEdit(i, j)));
     // Kiểm tra nếu ô đang chỉnh sửa hoặc có lỗi thì không làm gì
@@ -122,8 +128,8 @@ export class OptionsValueComponent implements OnInit {
   }
 
   updateCellType(cell: any, selectedType: any): void {
-    cell.type = this.currentType;  // Cập nhật loại của ô
-    cell.isSelected = true;  // Đánh dấu ô đã được chọn
+    cell.type = this.currentType; // Cập nhật loại của ô
+    cell.isSelected = true; // Đánh dấu ô đã được chọn
 
     // Cập nhật allowAutoNameEdit theo loại
     cell.allowAutoNameEdit = selectedType?.allowAutoNameEdit || false;
@@ -135,14 +141,14 @@ export class OptionsValueComponent implements OnInit {
       const maxNames = this.rows * this.cols;
       for (let i = 1; i <= maxNames; i++) {
         if (!this.usedNames.has(i)) {
-          cell.name = `A${i.toString().padStart(2, '0')}`;  // Tạo tên mới cho ô
+          cell.name = `A${i.toString().padStart(2, '0')}`; // Tạo tên mới cho ô
           this.usedNames.add(i);
           break;
         }
       }
     }
 
-    cell.icon = this.getIconByType(cell.type, cell.status);  // Cập nhật icon cho ô
+    cell.icon = this.getIconByType(cell.type, cell.status); // Cập nhật icon cho ô
   }
 
   // Hàm focus vào ô đang chỉnh sửa
@@ -269,10 +275,9 @@ export class OptionsValueComponent implements OnInit {
     toast.success('Dữ liệu đã được lưu thành công!');
   }
 
-  resetSelected(){
+  resetSelected() {
     this.initializeMatrix();
   }
-
 
   // Phương thức thay đổi trạng thái của ô trong ma trận thứ hai
   toggleStatus(row: number, col: number, event: MouseEvent): void {
@@ -281,11 +286,21 @@ export class OptionsValueComponent implements OnInit {
     if (cell.type === 2 || cell.type === 3) {
       return; // Không cho phép click nếu type là 2 hoặc 3
     }
-    if (cell.status === 'available') {
-      cell.status = 'block';
-    } else if (cell.status === 'block') {
-      cell.status = 'available';
-    }
+
+    // Remove the current status class
+    const cellElement = this.el.nativeElement.querySelector(`#cell-${row}-${col}`);
+    this.renderer.removeClass(cellElement, `status-${cell.status}`);
+
+    setTimeout(() => {
+      if (cell.status === 'available') {
+        cell.status = 'block';
+      } else if (cell.status === 'block') {
+        cell.status = 'available';
+      }
+
+      // Add the new status class
+      this.renderer.addClass(cellElement, `status-${cell.status}`);
+    }, 300); // Ensure the revert animation completes before applying the new status
   }
 
   hasError(): boolean {
@@ -343,5 +358,4 @@ export class OptionsValueComponent implements OnInit {
       }
     }
   }
-
 }
