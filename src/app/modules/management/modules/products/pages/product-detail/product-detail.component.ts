@@ -1,22 +1,20 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Component, ComponentFactoryResolver, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
-import {
-  AbstractControl,
-  FormArray,
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { Component, ComponentFactoryResolver, Input, OnInit, ViewChild, ViewContainerRef, } from '@angular/core';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { UtilsService } from 'src/app/base/utils.sevice';
 import { OptionsProductForm } from 'src/app/modules/management/model/options-product-form';
 import { AddVaritantProductFormComponent } from '../../component/add-varitant-product-form/add-varitant-product-form.component';
 import { v4 as uuid } from 'uuid';
-import { ProductService } from '../../../service/product.service';
-import { CurrencyPipe } from '@angular/common';
+import { ProductsService } from '../../../service/products.service';
+import { Product2Create, ProductOption } from 'src/app/modules/management/model/product.model';
+import * as _ from 'lodash';
+import { Utils } from 'src/app/shared/utils/utils';
+import { MatDialog } from '@angular/material/dialog';
+import { MaterialDialogComponent } from 'src/app/shared/components/material-dialog/material-dialog.component';
+import { ActivatedRoute, Router } from '@angular/router';
+import { OptionsService } from '../../../service/options.servive';
+import { SearchOptions } from 'src/app/modules/management/model/options.model';
 
 @Component({
   selector: 'app-product-detail',
@@ -24,8 +22,12 @@ import { CurrencyPipe } from '@angular/common';
   styleUrls: ['./product-detail.component.scss'],
 })
 export class ProductDetailComponent implements OnInit {
+  product: Product2Create = new Product2Create();
+
   @ViewChild('optionsContainer', { read: ViewContainerRef, static: true })
+
   optionsContainer!: ViewContainerRef;
+
 
   loadedOptions: any = {};
 
@@ -66,29 +68,18 @@ export class ProductDetailComponent implements OnInit {
   listOfCategory = [
     {
       name: 'Hàng dệt & Đồ nội thất mềm - Chăn ga gối đệm - Chăn',
-      value: 'Hàng dệt & Đồ nội thất mềm - Chăn ga gối đệm - Chăn',
+      value: 'asdf25asdf43436xsza',
     },
     {
       name: 'Hạng mục khác...',
-      value: 'Hạng mục khác...',
+      value: 'dsfyub345sad2f32432',
     },
   ];
 
   isOptions = false;
   isValidNewAddOptions = false;
 
-  listOfOptions = [
-    {
-      display_name: 'Màu Sắc',
-      _id: '5e70047aa2f3c2574a27e4a2',
-      isSelected: false,
-    },
-    {
-      display_name: 'Size',
-      _id: '5e70047aa2f3c2574a27e4a3',
-      isSelected: false,
-    },
-  ];
+  listOfOptions: any = [];
 
   optionsProductForm: OptionsProductForm<string>[] = [];
 
@@ -106,52 +97,211 @@ export class ProductDetailComponent implements OnInit {
     private fb: FormBuilder,
     public utilsService: UtilsService,
     private componentFactoryResolver: ComponentFactoryResolver,
-    private productService: ProductService,
+    private productsService: ProductsService,
+    private optionsService: OptionsService,
+    private utils: Utils,
+    private dialog: MatDialog,
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     this.productForm = new FormGroup({});
   }
 
   ngOnInit() {
-    this.formBuilder();
-    this.productImageBuilder();
-    // console.log('🚀 ~ ProductDetailComponent ~ ngOnInit ~ this.variants:', this.variants);
+    this.initProduct();
+    this.loadOptions();
   }
 
-  ngAfterViewInit(): void {}
+
+  private initProduct() {
+    let id = this.route.snapshot.params["id"]
+    //Logic handle create new or edit product with state and id
+    const getCurrentNavigation = this.router.getCurrentNavigation();
+    const data = getCurrentNavigation?.extras.state;
+    if (data && data['product']) {
+      this.product = data['product'];
+      this.initForm();
+      this.initializeProductImages();
+    } else if (id) {
+      this.productsService.getProductById(id).subscribe((product: Product2Create) => {
+        if (product) {
+          this.product = product;
+          console.log("🚀 ~ ProductDetailComponent ~ this.productsService.getProductById ~  this.product:", this.product)
+        }
+        this.initForm();
+        this.initializeProductImages();
+      });
+    } else {
+      this.initForm();
+      this.initializeProductImages();
+    }
+  }
+
+  // Initialize the main form
+  private async initForm() {
+    this.productForm = this.fb.group({
+      productName: [this.product.name, [Validators.required, Validators.minLength(25)]],
+      productMainImage: [this.product.mainImage, Validators.required],
+      productCate: [this.product.cate, Validators.required],
+      productDesc: [this.product.desc, Validators.required],
+      productVariants: this.fb.array([]),
+    });
+    this.productForm.controls['productVariants'] = await this.processVariantsForm();
+    this.initOptions();
+  }
+  // Initialize product images
+  private initializeProductImages() {
+    this.productMainImage = this.createImageData(
+      'Tải lên ảnh chỉnh',
+      this.product.mainImage,
+      'assets/icons/heroicons/outline/media-image.svg',
+      false,
+      ['Kích thước: 300x300 px', 'Kích thước tập tin tối đa: 5MB', 'Format: JPG, JPEG, PNG']
+    )
+
+    this.initializeProductGallery();
+  }
+
+  initializeProductGallery() {
+    const galleryConfig: [string, string, boolean][] = [
+      ['Chính Diện', './assets/images/front.png', true],
+      ['Cạnh Bên', './assets/images/side.png', true],
+      ['Góc Độ Khác', './assets/images/another-angle.png', true],
+      ['Đang sử dụng', './assets/images/using.png', true],
+      ['Biến Thể', './assets/images/variant.png', true],
+      ['Cảnh nền', './assets/images/background-perspective.png', true],
+      ['Chụp cận', './assets/images/close-up-photo.png', true],
+      ['Kích Thước', './assets/images/size-box.png', true]
+    ];
+
+    this.productGalleryImages = galleryConfig.map((config, index) =>
+      this.createImageData(config[0], this.product.galleryImage[index] || '', config[1], config[2])
+    );
+
+    if (this.product.galleryImage.length > 0) {
+      this.enableNextImageSlot(this.product.galleryImage.length - 1);
+    }
+  }
+
+  private createImageData(name: string, value: string, icon: string, disable: boolean, attrs?: Array<String>) {
+    return { name, value: value, icon, disable: disable, attrs };
+  }
 
   onSubmit() {
-    // if (!this.productForm.valid || this.isAnyOptionSetup()) {
-    //   this.markFormGroupTouched(this.productForm);
-    //   return;
-    // }
+    if (!this.productForm.valid || this.isAnyOptionSetup()) {
+      this.markFormGroupTouched(this.productForm);
+      return;
+    }
 
-    let galleryImage: any = [];
+    const productUpsert = this.prepareProductData();
+    console.log("🚀 ~ ProductDetailComponent ~ onSubmit ~ productUpsert:", productUpsert)
+    if (productUpsert.id) {
+      this.updateProduct(productUpsert);
+    } else {
+      this.createProduct(productUpsert);
+    }
+  }
 
-    this.productGalleryImages.forEach((item: any) => {
-      if (item.value) galleryImage.push(item.value);
-    });
+  loadOptions() {
+    this.optionsService.searchOptions().subscribe((searchOptions: SearchOptions) => {
+      if (searchOptions && searchOptions.options && searchOptions.options.length > 0) {
+        this.listOfOptions = searchOptions.options.map((option: any) => ({ ...option, isSelected: false }));
+      }
+    })
+  }
 
-    const productUpsert = {
-      name: this.productForm.get('productName')?.value,
+  // Prepare product data for submission
+  private prepareProductData() {
+    const formValue = this.productForm.getRawValue();
+    const galleryImages = this.productGalleryImages
+      .filter((item: any) => item.value)
+      .map((item: any) => item.value);
+
+    const options: Array<ProductOption> = [];
+
+    Object.values(formValue.options).forEach((option: any) => {
+      options.push(option);
+    })
+
+    return {
+      id: this.product.id || "",
+      name: formValue.productName,
       mainImage: this.productMainImage.value,
-      galleryImage: galleryImage,
-      cate: this.productForm.get('productCate')?.value,
-      desc: this.productForm.get('productDesc')?.value,
-      variants: this.productForm.get('productVariants')?.value,
+      galleryImage: galleryImages,
+      cate: formValue.productCate,
+      desc: formValue.productDesc,
+      options: options,
+      //don't know why can not get value option_value of productVariants on formValue;
+      variants: this.getFormGroup(this.productForm, 'productVariants').value,
     };
-    console.log('🚀 ~ ProductDetailComponent ~ onSubmit ~ productUpsert:', productUpsert);
-    this.productForm.getRawValue();
-    console.log(
-      '🚀 ~ ProductDetailComponent ~ onSubmit ~ this.productForm.getRawValue();:',
-      this.productForm.getRawValue(),
-    );
-    this.createProduct(productUpsert);
   }
 
   private createProduct(productUpsert: any) {
-    this.productService.createProduct();
+    this.productsService.createProduct(productUpsert).subscribe((res: any) => {
+      if (res) {
+        this.showSucces();
+        return;
+      }
+      this.showFailed();
+    })
   }
 
+  private updateProduct(productUpsert: any) {
+    this.productsService.updateProduct(productUpsert).subscribe((res: any) => {
+      if (res) {
+        this.showSucces();
+        return;
+      }
+      this.showFailed();
+    })
+  }
+
+  showSucces() {
+    const dialogRef = this.dialog.open(MaterialDialogComponent, {
+      data: {
+        icon: {
+          type: 'success'
+        },
+        title: 'Tạo Sản Phẩm Thành Công',
+        content: 'Bạn có thể chỉnh sửa hoặc quay lại trang danh sách sản phẩm để xem sản phẩm vừa tạo',
+        btn: [
+          {
+            label: 'OK',
+            type: 'cancel'
+          },
+          {
+            label: 'Quay lại Danh sách sản phẩm',
+            type: 'submit'
+          },
+        ]
+      },
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        window.location.href = '/management/products';
+      }
+    });
+  }
+
+  showFailed() {
+    const dialogRef = this.dialog.open(MaterialDialogComponent, {
+      data: {
+        icon: {
+          type: 'dangerous'
+        },
+        title: 'Tạo Sản Phẩm Không Thành Công',
+        content: 'Bạn vui lòng xem lại hoặc liên hệ hỗ trợ',
+        btn: [
+          {
+            label: 'OK',
+            type: 'cancel'
+          }
+        ]
+      },
+    });
+  }
+
+  // Handle file change for gallery images
   onFileChange(event: any, currentImageIndex: number) {
     const files: FileList = event.target.files;
     if (!files || files.length === 0) return;
@@ -172,29 +322,29 @@ export class ProductDetailComponent implements OnInit {
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    if (!file || !this.isValidImageFile(file)) return;
+    if (file && this.isValidImageFile(file)) {
+      this.readAndSetMainImage(file);
+    }
+  }
 
+  private readAndSetMainImage(file: File): void {
     const reader = new FileReader();
     reader.onload = (event: any) => {
-      this.productMainImage = this.productMainImage;
       this.productMainImage.value = event.target.result;
       this.productMainImage.disable = true;
-      // Enable next image slot if available
-      const nextImage = this.productGalleryImages.find((item: any) => item.value == null);
-      nextImage.disable = false;
+      this.enableNextImageSlot(-1);
     };
     reader.readAsDataURL(file);
   }
 
-  isAnyOptionSetup() {
-    const optionsForm = this.productForm.controls['options'] as FormArray;
-    let isAnyOptionSetup = false;
-    Object.values(optionsForm.controls).forEach((optionF: any) => {
-      if (optionF && optionF.controls['isOptionSetup']?.value) {
-        isAnyOptionSetup = true;
-      }
-    });
-    return isAnyOptionSetup;
+  // Enable next image slot if available
+  private enableNextImageSlot(currentIndex: number): void {
+    const nextImage = this.productGalleryImages.find((item: any, index: number) =>
+      index > currentIndex && !item.value
+    );
+    if (nextImage) {
+      nextImage.disable = false;
+    }
   }
 
   private isValidImageFile(file: File): boolean {
@@ -211,10 +361,7 @@ export class ProductDetailComponent implements OnInit {
       currentImage.disable = true;
 
       // Enable next image slot if available
-      if (index + 1 < this.productGalleryImages.length) {
-        const nextImage = this.productGalleryImages[index + 1];
-        nextImage.disable = false;
-      }
+      this.enableNextImageSlot(index);
     };
     reader.readAsDataURL(file);
   }
@@ -229,30 +376,23 @@ export class ProductDetailComponent implements OnInit {
     // Update the disabled state of all images
     this.updateImageStates();
     this.productForm.patchValue({ productImage: '' });
-    console.log(
-      '🚀 ~ ProductDetailComponent ~ removeFileImage ~ this.productGalleryImages:',
-      this.productGalleryImages,
-    );
   }
 
+  // Remove main image
   removeMainImageFileImage(): void {
-    // Clear the  image
     this.productMainImage.value = null;
     this.productMainImage.disable = false;
-
-    const nextImage = this.productGalleryImages.find((item: any) => item.disable == false);
-    if (!nextImage.value) {
-      nextImage.disable = true;
-    }
-
+    this.updateImageStates();
     this.productForm.patchValue({ productMainImage: '' });
   }
 
+  // Clear image at specific index
   private clearImage(index: number): void {
     this.productGalleryImages[index].value = null;
     this.productGalleryImages[index].disable = false;
   }
 
+  // Shift images up to fill the gap
   private shiftImagesUp(startIndex: number): void {
     for (let i = startIndex; i < this.productGalleryImages.length - 1; i++) {
       if (this.productGalleryImages[i].value === null && this.productGalleryImages[i + 1].value !== null) {
@@ -263,126 +403,55 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
+  // Update image states after removal
   private updateImageStates(): void {
     let firstEmptySlotFound = false;
-
-    for (let i = 0; i < this.productGalleryImages.length; i++) {
-      if (this.productGalleryImages[i].value === null && !firstEmptySlotFound) {
-        this.productGalleryImages[i].disable = false;
+    this.productGalleryImages.forEach((image: any) => {
+      if (!image.value && !firstEmptySlotFound) {
+        image.disable = false;
         firstEmptySlotFound = true;
       } else {
-        this.productGalleryImages[i].disable = true;
+        image.disable = true;
       }
-    }
+    });
   }
 
+  // Mark all controls in a form group as touched
   private markFormGroupTouched(formGroup: FormGroup) {
     Object.values(formGroup.controls).forEach((control: any) => {
+      control.markAsTouched();
       if (control.controls) {
         this.markFormGroupTouched(control);
       }
-      control.markAsTouched();
-      if (control instanceof FormGroup) {
-        this.markFormGroupTouched(control);
-      }
     });
   }
 
-  formBuilder() {
-    this.productForm = this.fb.group({
-      productName: ['', [Validators.required, Validators.minLength(25)]],
-      productMainImage: ['', Validators.required],
-      productCate: ['', Validators.required],
-      productDesc: ['', Validators.required],
-      productVariants: this.createVariantsForm(),
-    });
-  }
 
-  variantFormBuilder() {
-    return this.fb.group({
-      ['price']: new FormControl('', [Validators.required]),
-      ['qty']: new FormControl('', [Validators.required]),
-      ['upc']: new FormControl(''),
-    });
-  }
-
-  productImageBuilder() {
-    this.productMainImage = {
-      name: 'Tải lên ảnh chỉnh',
-      attrs: ['Kích thước: 300x300 px', 'Kích thước tập tin tối đa: 5MB', 'Format: JPG, JPEG, PNG'],
-      formControlName: 'mainImage',
-      value: null,
-      icon: 'assets/icons/heroicons/outline/media-image.svg',
-      disable: false,
-    };
-
-    this.productGalleryImages = [
-      {
-        name: 'Chính Diện',
-        value: null,
-        icon: './assets/images/front.png',
-        disable: true,
-      },
-      {
-        name: 'Cạnh Bên',
-        value: null,
-        icon: './assets/images/side.png',
-        disable: true,
-      },
-      {
-        name: 'Góc Độ Khác',
-        value: null,
-        icon: './assets/images/another-angle.png',
-        disable: true,
-      },
-      {
-        name: 'Đang sử dụng',
-        value: null,
-        icon: './assets/images/using.png',
-        disable: true,
-      },
-      {
-        name: 'Biến Thể',
-        value: null,
-        icon: './assets/images/variant.png',
-        disable: true,
-      },
-      {
-        name: 'Cảnh nền',
-        value: null,
-        icon: './assets/images/background-perspective.png',
-        disable: true,
-      },
-      {
-        name: 'Chụp cận',
-        value: null,
-        icon: './assets/images/close-up-photo.png',
-        disable: true,
-      },
-      {
-        name: 'Kích Thước',
-        value: null,
-        icon: './assets/images/size-box.png',
-        disable: true,
-      },
-    ];
-  }
-
+  // Handle drag and drop for gallery images
   drop(event: CdkDragDrop<object[]>) {
     moveItemInArray(this.productGalleryImages, event.previousIndex, event.currentIndex);
   }
 
-  turnOnOffOptions() {
-    if (!this.isOptions) {
+  // Toggle options on/off
+  toggleOptions() {
+    if (this.isOptions) {
+      if (!this.product.variants || this.product.variants.length <= 0) {
+        this.addOption();
+      }
+      this.initOptions();
+    } else {
       this.turnOffOptions();
-      return;
     }
-    this.addOption();
   }
 
+  // Turn off options
   turnOffOptions() {
-    for (let idx in this.loadedOptions) {
+    const optionsForm = this.productForm.get('options') as FormGroup;
+    if (optionsForm) {
       this.productForm.removeControl('options');
+    }
+
+    for (let idx in this.loadedOptions) {
       this.loadedOptions[idx].destroy();
     }
     this.loadedOptions = {};
@@ -390,32 +459,108 @@ export class ProductDetailComponent implements OnInit {
     return;
   }
 
-  addOption() {
+  async initOptions() {
+    if (!this.product.variants || this.product.variants.length <= 0) {
+      return;
+    }
+
+    this.isOptions = true;
+
+    this.productForm.addControl('options', this.fb.group({}));
     let optionsForm = this.productForm.controls['options'] as FormGroup;
+
+
+    //convert product variant to option
+    // this.product.variants.forEach((pv: any) => {
+    //   pv.option_values.forEach((ov: any) => {
+    //     let option = options.find((co: any) => co.option_id == ov.option_id);
+    //     if (!option) {
+    //       option = {
+    //         isOptionSetup: false,
+    //         option_id: ov.option_id,
+    //         option_values: []
+    //       }
+    //     }
+    //     if (option.option_id == ov.option_id) {
+    //       let optionValueExist = option.option_values.find((s: any) => s.option_id == ov.option_id && s.name == ov.name)
+    //       if (!optionValueExist) {
+    //         option.option_values.push(ov);
+    //       }
+    //     }
+    //     let optionExist = options.find((co: any) => co.option_id == option.option_id);
+
+    //     if (!optionExist) {
+    //       options.push(option);
+    //     }
+    //   })
+    // });
+
+    //crate option form
+    Object.assign(this.confirmedOptions, this.product.options);
+
+
+    await this.confirmedOptions.forEach(async (option: any) => {
+      const uId = uuid();
+      const optionGroup = this.fb.group({
+        option_id: [option.option_id, Validators.required],
+        option_values: this.fb.array([]),
+        isOptionSetup: false,
+      });
+
+      const optionValuesArray = optionGroup.get('option_values') as FormArray;
+
+      option.option_values.forEach((ov: any) => {
+        const variantForm = this.fb.group({
+          name: [ov.name, Validators.required],
+        }) as FormGroup;
+
+        if (ov.image) {
+          variantForm.addControl('image', this.fb.control(ov.image, Validators.required));
+        }
+
+        optionValuesArray.push(variantForm);
+      });
+
+      optionsForm.addControl(uId, optionGroup);
+      this.addOption(optionsForm, uId);
+    });
+
+    this.productForm.removeControl('productVariants');
+    this.productForm.addControl('productVariants', this.fb.array([]));
+    this.productForm.controls['productVariants'] = await this.processVariantsForm();
+    console.log("🚀 ~ ProductDetailComponent ~ initOptions ~ this.productForm.controls['productVariants']:", this.productForm.controls['productVariants'])
+  }
+
+  // Add a new option
+  addOption(optionsForm?: FormGroup, uId?: string) {
+
+    //create new uId
+    if (!uId) {
+      uId = uuid();
+    }
+
+    //create new optionsForm
+    if (!optionsForm) {
+      this.productForm.addControl('options', this.fb.group({}));
+      optionsForm = this.productForm.controls['options'] as FormGroup;
+      optionsForm.setValidators(this.customOptionsValidator);
+
+      optionsForm.addControl(
+        uId,
+        this.fb.group({
+          option_id: ['', Validators.required],
+          option_values: this.fb.array([]),
+          isOptionSetup: true,
+        }),
+      );
+    }
 
     let componentFactory = this.componentFactoryResolver.resolveComponentFactory(AddVaritantProductFormComponent);
     let componentRef = this.optionsContainer.createComponent(componentFactory);
 
     let ref: any = componentRef.instance;
 
-    const uId = uuid();
-
-    if (!optionsForm) {
-      this.productForm.addControl('options', this.fb.group({}));
-      optionsForm = this.productForm.controls['options'] as FormGroup;
-      optionsForm.setValidators(this.customOptionsValidator);
-    }
-
-    optionsForm.addControl(
-      'option-' + uId,
-      this.fb.group({
-        option_id: ['', Validators.required],
-        option_values: this.fb.array([]),
-        isOptionSetup: true,
-      }),
-    );
-
-    const formOptionsGroup = optionsForm.controls['option-' + uId];
+    const formOptionsGroup = optionsForm.controls[uId];
 
     formOptionsGroup.setValidators(this.customOptionValidator);
 
@@ -476,7 +621,7 @@ export class ProductDetailComponent implements OnInit {
     // Subscribing to the EventEmitter from the option
     ref.emitDeletion.subscribe((uId: number) => {
       let optionsForm = this.productForm.controls['options'] as FormGroup;
-      const formOptionsGroup = optionsForm.controls['option-' + uId];
+      const formOptionsGroup = optionsForm.controls[uId];
       const option = formOptionsGroup.getRawValue();
       this._removeOption(uId);
 
@@ -491,37 +636,44 @@ export class ProductDetailComponent implements OnInit {
 
   evnetEmitOptions(ref: any) {
     // Subscribing to the EventEmitter from the option
-    ref.emitOptionsAndVariants.subscribe((uId: any) => {
+    ref.emitOptionsAndVariants.subscribe(async (uId: any) => {
       let optionsForm = this.productForm.controls['options'] as FormGroup;
-      const formOptionsGroup = optionsForm.controls['option-' + uId];
+      const formOptionsGroup = optionsForm.controls[uId];
       const option = formOptionsGroup.getRawValue();
 
       //check isValidNewAddOptions
       this.checkIsValidNewAddOptions(option);
 
-      const existConfirmedOptions = this.confirmedOptions.find((c: any) => c.option_id == option.option_id);
+      const existConfirmedOptions = await this.confirmedOptions.find((c: any) => c.option_id == option.option_id);
       if (existConfirmedOptions) {
         existConfirmedOptions.option_values = option.option_values;
       } else {
         this.confirmedOptions.push(option);
       }
       this.productForm.removeControl('productVariants');
-      this.productForm.addControl('productVariants', this.createVariantsForm());
-      console.log('🚀 ~ ProductDetailComponent ~ addOption ~ this.productForm: 1111111111', this.productForm);
+      this.productForm.addControl('productVariants', this.fb.array([]));
+      this.productForm.controls['productVariants'] = await this.processVariantsForm();
+      if (!this.checkIsOptionsSetup()) {
+        this.onChangeVariants();
+      }
     });
   }
 
   evnetEmitOpenSetupOption(ref: any) {
-    ref.emitOpenSetupOptionsAndVariants.subscribe((uId: any) => {
+    ref.emitOpenSetupOptionsAndVariants.subscribe(async (uId: any) => {
       let optionsForm = this.productForm.controls['options'] as FormGroup;
-      const formOptionsGroup = optionsForm.controls['option-' + uId];
+      const formOptionsGroup = optionsForm.controls[uId] as FormGroup;
+
+      formOptionsGroup.patchValue({ isOptionSetup: true });
+
       const option = formOptionsGroup.getRawValue();
 
-      const idxConfirmedOptions = this.confirmedOptions.findIndex((c: any) => c.option_id == option.option_id);
+      const idxConfirmedOptions = await this.confirmedOptions.findIndex((c: any) => c.option_id == option.option_id);
       this.confirmedOptions[idxConfirmedOptions].option_values = [];
       // this.confirmedOptions.push(option);
       this.productForm.removeControl('productVariants');
-      this.productForm.addControl('productVariants', this.createVariantsForm());
+      this.productForm.addControl('productVariants', this.fb.array([]));
+      this.productForm.controls['productVariants'] = await this.processVariantsForm();
     });
   }
 
@@ -541,45 +693,153 @@ export class ProductDetailComponent implements OnInit {
     return confirmedOptionsValid ? true : false;
   }
 
+  checkIsOptionsSetup() {
+    const optionsForm = this.getFormGroup(this.productForm, "options");
+    if (!optionsForm)
+      return;
+    const optionsFormValue = optionsForm.value;
+    let isOptionsSetup = false;
+    Object.values(optionsFormValue).forEach((option: any) => {
+      if (option.isOptionSetup) {
+        isOptionsSetup = true;
+      }
+    })
+    return isOptionsSetup;
+  }
+
   getFormGroup(formControl: FormGroup, controlName: string) {
     const formGroup = formControl.controls[controlName] as any;
     if (formGroup && !formGroup) return '';
     return formGroup;
   }
 
-  private createVariantsForm() {
-    let sets = [[]];
+  // Create variants form
+  // private async processVariantsForm() {
+  //   let sets = [[]];
 
-    this.confirmedOptions.forEach((option: any) => {
-      if (option) {
-        const newsets: any = [];
-        option.option_values.forEach((v: any) => {
-          v.option_id = option.option_id;
-          newsets.push(Array.from(sets, (set) => [...set, v]));
-        });
-        sets = newsets.length > 0 ? newsets.flatMap((set: any) => set) : sets;
-      }
-    });
+  //   let variantsForm = this.fb.array([]) as FormArray;
 
-    let variantsForm = this.fb.array([]) as FormArray;
+  //   const variantsFromOptions = this.processMapVariantsFromOptions(this.confirmedOptions);
 
-    sets.forEach((set: any) => {
+  //   await variantsFromOptions.forEach(async (variantValuesFromOptions: any) => {
+  //     let variantExist: any = null;
+
+  //     this.product.variants.forEach(async (productVariant: any) => {
+  //       var result = this.isArrayEqual(
+  //         variantValuesFromOptions,
+  //         productVariant.option_values
+  //       );
+  //       if (result) {
+  //         variantExist = productVariant
+  //       }
+  //     });
+
+  //     let variantForm = this.fb.group({
+  //       ['price']: new FormControl('', [Validators.required]),
+  //       ['qty']: new FormControl('', [Validators.required]),
+  //       ['upc']: new FormControl(''),
+  //     }) as FormGroup;
+
+  //     if (variantExist) {
+  //       variantForm.patchValue({ price: variantExist.price });
+  //       variantForm.patchValue({ qty: variantExist.qty });
+  //       variantForm.patchValue({ upc: variantExist.upc });
+  //     }
+
+  //     if (variantValuesFromOptions && variantValuesFromOptions.length > 0) {
+  //       variantForm.addControl('option_values', this.fb.array([]));
+  //       const optionsValuesForm = variantForm.controls['option_values'] as FormArray;
+
+  //       await variantValuesFromOptions.forEach((s: any) => {
+  //         const optionValueForm = this.fb.group({
+  //           ['name']: new FormControl(s.name),
+  //           ['option_id']: new FormControl(s.option_id),
+  //         }) as FormGroup;
+
+  //         optionsValuesForm.push(optionValueForm);
+  //       });
+  //     }
+  //     variantsForm.push(variantForm);
+  //   });
+  //   return variantsForm;
+  // }
+
+  async processVariantsForm(): Promise<FormArray> {
+    const variantsFromOptions = this.processMapVariantsFromOptions(this.confirmedOptions);
+    const variantsForm = this.fb.array([]) as FormArray;
+
+    await variantsFromOptions.forEach((variantValuesFromOptions: any[]) => {
+
+      const variantExist = this.product.variants.find(productVariant =>
+        this.isArrayEqual(variantValuesFromOptions, productVariant.option_values)
+      );
+
       const variantForm = this.fb.group({
-        ['price']: new FormControl('', [Validators.required]),
-        ['qty']: new FormControl('', [Validators.required]),
-        ['upc']: new FormControl(''),
-        ['option_values']: new Array(),
-      });
-      const option_values: any = variantForm.controls['option_values'];
-      option_values.value = [];
-      set.forEach((s: any) => {
-        option_values.value.push(s);
-      });
+        price: [variantExist?.price || '', Validators.required],
+        qty: [variantExist?.qty || '', Validators.required],
+        upc: [variantExist?.upc || '']
+      }) as FormGroup;
+
+      if (variantValuesFromOptions && variantValuesFromOptions.length > 0) {
+        const optionsValuesForm = this.fb.array(
+          variantValuesFromOptions.map(s => this.fb.group({
+            name: [s.name],
+            option_id: [s.option_id]
+          }))
+        );
+        variantForm.addControl('option_values', optionsValuesForm);
+      }
 
       variantsForm.push(variantForm);
     });
+
     return variantsForm;
-    // return sets.map((set) => ({}));
+  }
+
+
+  processMapVariantsFromOptions(confirmedOptions: any[]): any[][] {
+    return confirmedOptions.reduce((sets: any, option: any) => {
+      const processedValues = option.option_values.map(({ image, ...rest }: any) => ({
+        ...rest,
+        option_id: option.option_id
+      }));
+
+      return processedValues.length > 0
+        ? sets.flatMap((set: any) => processedValues.map((value: any) => [...set, value]))
+        : sets;
+    }, [[]] as any[][]);
+  }
+
+  isArrayEqual(x: any, y: any) {
+    return _(x).xorWith(y, _.isEqual).isEmpty();
+  };
+
+  // Create variants form
+  private async initVariantsForm() {
+    let variantsForm = this.fb.array([]) as FormArray;
+    await this.product.variants.forEach(async (variant: any) => {
+      let variantForm = this.fb.group({
+        ['price']: new FormControl(variant.price, [Validators.required]),
+        ['qty']: new FormControl(variant.qty, [Validators.required]),
+        ['upc']: new FormControl(variant.upc),
+        ["option_values"]: this.fb.array([])
+      }) as FormGroup;
+      if (variant.option_values && variant.option_values.length > 0) {
+        const option_values: any = variantForm.controls['option_values'];
+        option_values.value = [];
+        await variant.option_values.forEach((s: any) => {
+          option_values.value.push(s);
+        });
+        variantsForm.push(variantForm);
+      }
+    });
+    return variantsForm;
+  }
+
+  // Check if any option is set up
+  private isAnyOptionSetup(): boolean {
+    const optionsForm = this.productForm.get('options') as FormGroup;
+    return optionsForm ? Object.values(optionsForm.controls).some((control: any) => control.value.isOptionSetup) : false;
   }
 
   getOption(id: any) {
@@ -600,13 +860,26 @@ export class ProductDetailComponent implements OnInit {
     this.isBatchEditing = !this.isBatchEditing;
   }
 
-  submitBatchEditing() {
-    const variantsForm = this.getFormGroup(this.productForm, 'productVariants').controls;
-    console.log('🚀 ~ ProductDetailComponent ~ submitBatchEditing ~ variantsForm:', variantsForm);
-    Object.values(variantsForm).forEach((variant: any) => {
+  async submitBatchEditing() {
+    const variantsForm = this.getFormGroup(this.productForm, 'productVariants');
+
+    if (!variantsForm)
+      return;
+    const variantsFormControls = variantsForm.controls;
+
+    await Object.values(variantsFormControls).forEach((variant: any) => {
       variant.patchValue({ price: this.batchEditingPrice });
       variant.patchValue({ qty: this.batchEditingQTY });
       variant.patchValue({ upc: this.batchEditingSKU });
     });
+    this.onChangeVariants();
+  }
+
+  onChangeVariants() {
+    const variantsProductForm = this.getFormGroup(this.productForm, 'productVariants');
+    if (!variantsProductForm)
+      return;
+    const variantsProductValue = variantsProductForm.value;
+    this.product.variants = variantsProductValue;
   }
 }

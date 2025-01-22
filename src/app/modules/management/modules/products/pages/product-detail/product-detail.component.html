@@ -214,7 +214,7 @@
         <div class="mb-4">
             <label class="inline-flex items-center mb-2 cursor-pointer">
                 <span class="text-sm font-medium text-gray-900 dark:text-gray-300 pr-5">Kích hoạt biến thể</span>
-                <nz-switch class="flex" [(ngModel)]="isOptions" [ngModelOptions]="{standalone: true}" (ngModelChange)="turnOnOffOptions()"
+                <nz-switch class="flex" [(ngModel)]="isOptions" [ngModelOptions]="{standalone: true}" (ngModelChange)="toggleOptions()"
                     [nzCheckedChildren]="checkedTemplate"
                     [nzUnCheckedChildren]="unCheckedTemplate"
                 ></nz-switch>
@@ -273,7 +273,7 @@
             <table class="min-w-full mt-4 border border-border">
                 <thead>
                     <tr class="bg-gray-100 text-left">
-                        @if(isOptions){
+                        @if(isOptions && !checkIsOptionsSetup()){
                             @if(confirmedOptions.length <= 0){
                                 <th class="p-2 border-b border-border text-sm font-normal">Tên Biến Thể</th>
                             }@else {
@@ -291,7 +291,7 @@
                     </tr>
                 </thead>
                 <tbody formArrayName="productVariants">
-                    @if(!checkConfirmedOptionsValid() && isOptions){
+                    @if(checkIsOptionsSetup() || (!checkConfirmedOptionsValid() && isOptions)){
                         <tr>
                             <td colspan="4" class="h-32 text-center">
                                 Không có SKU nào sẵn có
@@ -300,16 +300,19 @@
                     }@else {
                         @for(variant of getFormGroup(this.productForm, 'productVariants').controls; track variant){
                             <tr [formGroupName]="$index">
-                                @for(variantValue of getFormGroup(variant, 'option_values').value; track variantValue){
-                                    <td class="p-2 border-b border-border content-baseline">
-                                        <label>{{variantValue.name}}</label>
-                                    </td>
+                                @if(getFormGroup(variant, 'option_values')){
+                                    @for(variantValue of getFormGroup(variant, 'option_values').value; track variantValue){
+                                        <td class="p-2 border-b border-border content-baseline">
+                                            <label>{{variantValue.name}}</label>
+                                        </td>
+                                    }
                                 }
                                 
                                 <td class="p-2 border-b border-border content-baseline">
                                     <input type="text" mask="separator.2" thousandSeparator="," separatorLimit="99999999" placeholder="Giá bán" class="mt-1 block w-full border border-border rounded-md p-2 text-sm" [formControlName]="'price'"
                                         [ngClass]="{'border-red-500 border border-border' : getFormGroup(variant, 'price').errors?.['required'] 
-                                        && getFormGroup(variant, 'price').touched}"/>
+                                        && getFormGroup(variant, 'price').touched}"
+                                        (blur)="onChangeVariants()"/>
                                     <p class="mt-1 text-xs text-red-500" 
                                         *ngIf="getFormGroup(variant, 'price').errors?.['required'] && getFormGroup(variant, 'price').touched">
                                         Vui lòng điền vào trường này</p>
@@ -318,13 +321,16 @@
                                     <input type="number" placeholder="Số lượng"
                                         class="mt-1 block w-full border border-border rounded-md p-2 text-sm" [formControlName]="'qty'"
                                         [ngClass]="{'border-red-500 border border-border' : getFormGroup(variant, 'qty').errors?.['required'] 
-                                        && getFormGroup(variant, 'qty').touched}"/>
+                                        && getFormGroup(variant, 'qty').touched}"
+                                        (blur)="onChangeVariants()"/>
                                     <p class="mt-1 text-xs text-red-500" 
                                         *ngIf="getFormGroup(variant, 'qty').errors?.['required'] && getFormGroup(variant, 'qty').touched">
                                         Vui lòng điền vào trường này</p>
                                 </td>
                                 <td class="p-2 border-b border-border content-baseline">
-                                    <input type="text" placeholder="SKU" class="mt-1 block w-full border border-border rounded-md p-2 text-sm" [formControlName]="'upc'"/>
+                                    <input type="text" placeholder="SKU" class="mt-1 block w-full border border-border rounded-md p-2 text-sm" 
+                                    [formControlName]="'upc'"
+                                    (blur)="onChangeVariants()"/>
                                 </td>
                                 <!-- <td class="p-2 border-b border-border">
                                     <button

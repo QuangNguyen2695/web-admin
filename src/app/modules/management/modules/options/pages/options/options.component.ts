@@ -62,9 +62,22 @@ export class OptionsComponent implements OnInit {
   deleteOption(id: string): void {
     const dialogRef = this.dialog.open(MaterialDialogComponent, {
       data: {
+        icon: {
+           type: 'dangerous'
+        },
         title: 'Delete Option',
         content:
           'Are you sure you want to delete this option? All of your data will be permanently removed. This action cannot be undone.',
+        btn: [
+          {
+            label: 'NO',
+            type: 'cancel'
+          },
+          {
+            label: 'YES',
+            type: 'submit'
+          },
+        ]
       },
     });
 

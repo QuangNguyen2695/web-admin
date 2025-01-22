@@ -8,7 +8,9 @@ import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { AppModule } from './app/app.module';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideEnvironmentNgxMask } from 'ngx-mask';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { LoadingInterceptor } from './app/shared/Interceptor/loading-interceptor';
+import { LoadingService } from './app/shared/utils/loading.service';
 
 if (ENV.production) {
   enableProdMode();
@@ -20,11 +22,12 @@ if (ENV.production) {
 
 bootstrapApplication(AppComponent, {
   providers: [
-    importProvidersFrom(BrowserModule, AppModule),
-    provideAnimations(),
-    provideAnimationsAsync(),
-    provideAnimationsAsync(),
-    provideEnvironmentNgxMask(),
+    importProvidersFrom(BrowserModule, AppModule, LoadingService), provideAnimations(), provideAnimationsAsync(), provideAnimationsAsync(),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: LoadingInterceptor,
+      multi: true,
+    },
   ],
 }).catch((err) => console.error(err));
 

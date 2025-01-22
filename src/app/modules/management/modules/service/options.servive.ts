@@ -11,7 +11,7 @@ export class OptionsService {
 
   constructor(private apiGateawayService: ApiGateawayService) {}
 
-  searchOptions(pageIdx: number, pageSize: number, keyword: string, sortBy: string) {
+  searchOptions(pageIdx: number = 0, pageSize: number = 999, keyword: string = "", sortBy: string = "") {
     const url = `${this.url}?pageIdx=${pageIdx}&pageSize=${pageSize}&keyword=${keyword}&sortBy=${sortBy}`;
     return this.apiGateawayService.Cget(url).pipe(
       tap((res: any) => {}),

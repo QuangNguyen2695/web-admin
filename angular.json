@@ -37,7 +37,7 @@
             ],
             "styles": ["src/styles.scss", "node_modules/ng-zorro-antd/ng-zorro-antd.min.css"],
             "scripts": ["node_modules/apexcharts/dist/apexcharts.min.js"],
-            "allowedCommonJsDependencies": ["apexcharts"]
+            "allowedCommonJsDependencies": ["apexcharts" , "lodash"]
           },
           "configurations": {
             "production": {
