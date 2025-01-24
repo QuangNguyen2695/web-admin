@@ -9,7 +9,7 @@
 
 <div class="matrix">
   <div *ngFor="let row of matrix; let i = index" class="row">
-    <div *ngFor="let cell of row; let j = index" class="relative flex items-center justify-center">
+    <div *ngFor="let cell of row; let j = index" id="cell-{{i}}-{{j}}" class="relative flex items-center justify-center">
       <div
         [class.cell]="!cell.isSelected"
         [class.selected]="cell.isSelected"

@@ -144,3 +144,41 @@
 .show-icon {
   animation: showIcon 0.3s forwards;
 }
+
+
+/* Animation for changing status */
+@keyframes statusChange {
+  from {
+    filter: blur(10px);
+    opacity: 0;
+  }
+
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+@keyframes statusRevert {
+  from {
+    filter: blur(10px);
+    opacity: 0;
+  }
+
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+.status-available {
+  animation: statusChange 0.3s forwards;
+}
+
+.status-block {
+  animation: statusChange 0.3s forwards;
+}
+
+.status-reverting {
+  animation: statusRevert 0.3s forwards;
+}
