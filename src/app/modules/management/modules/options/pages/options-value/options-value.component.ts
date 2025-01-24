@@ -1,8 +1,6 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
-import { AngularSvgIconModule } from 'angular-svg-icon';
 import { toast } from 'ngx-sonner';
-import { User } from 'src/app/modules/management/model/user.model';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-options-value',
@@ -15,6 +13,7 @@ export class OptionsValueComponent implements OnInit {
   rows: number = 11; // Number of rows in the matrix
   cols: number = 7; // Number of columns in the matrix
   matrix: {
+    id: string;
     value: number;
     type: number;
     isEditing: boolean;
@@ -28,6 +27,7 @@ export class OptionsValueComponent implements OnInit {
   currentType: number = 1; // Kiểu hiện tại đang chọn
   usedNames: Set<number> = new Set(); // Danh sách lưu trữ các giá trị đã được sử dụng
   selectedMatrix: {
+    id: string;
     value: number;
     type: number;
     name: string;
@@ -47,6 +47,7 @@ export class OptionsValueComponent implements OnInit {
     ///temp second matrix
     this.selectedMatrix = Array.from({ length: this.rows }, (_, i) =>
       Array.from({ length: this.cols }, (_, j) => ({
+        id: '',
         value: i * this.cols + j + 1,
         type: 0,
         name: '',
@@ -61,6 +62,7 @@ export class OptionsValueComponent implements OnInit {
   initializeMatrix(): void {
     this.matrix = Array.from({ length: this.rows }, (_, i) =>
       Array.from({ length: this.cols }, (_, j) => ({
+        id: '',
         value: i * this.cols + j + 1,
         type: 0,
         isEditing: false,
@@ -253,10 +255,18 @@ export class OptionsValueComponent implements OnInit {
   saveSelected(): void {
     // Ánh xạ dữ liệu từ các ô được chọn trong ma trận 1 sang ma trận 2
     const selectedCells = this.matrix.flat().filter((cell) => cell.isSelected);
+
     selectedCells.forEach((cell) => {
       const row = Math.floor((cell.value - 1) / this.cols);
       const col = (cell.value - 1) % this.cols;
+
+      // Kiểm tra và gán GUID nếu chưa có
+      if (!cell.id) {
+        cell.id = uuidv4();
+      }
+
       this.selectedMatrix[row][col] = {
+        id: cell.id,
         value: cell.value,
         type: cell.type,
         name: cell.name,
@@ -269,8 +279,10 @@ export class OptionsValueComponent implements OnInit {
     toast.success('Dữ liệu đã được lưu thành công!');
   }
 
-  resetSelected(){
+
+  resetSelected() {
     this.initializeMatrix();
+    this.usedNames.clear();
   }
 
 
