@@ -38,14 +38,14 @@ export class OptionsValueComponent implements OnInit {
   types = [
     {
       value: 1,
-      label: 'Ghế',
+      name: 'Ghế',
       allowAutoNameEdit: true,
       icon: 'seat-available.svg',
       blockIcon: 'seat-block.svg',
       selectedIcon: 'seat-select',
     },
-    { value: 2, label: 'Hành lang', allowAutoNameEdit: false, icon: 'street.svg' },
-    { value: 3, label: 'Tài xế', allowAutoNameEdit: false, icon: 'driver.svg' },
+    { value: 2, name: 'Hành lang', allowAutoNameEdit: false, icon: 'street.svg' },
+    { value: 3, name: 'Tài xế', allowAutoNameEdit: false, icon: 'driver.svg' },
   ];
 
   constructor(private el: ElementRef, private renderer: Renderer2) {
